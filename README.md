@@ -477,6 +477,7 @@ This software is released under the [Apache 2.0 License][apache2_license].
 [ctassetspickercontroller]: https://github.com/chiunam/CTAssetsPickerController
 [cordova-plugin-local-notifications]: https://github.com/katzer/cordova-plugin-local-notifications
 [cordova]: https://cordova.apache.org
+[PGB_plugin]: https://build.phonegap.com/plugins/413
 [onsuccess]: #onSuccess
 [oncancel]: #onCancel
 [options]: #options
