@@ -75,7 +75,7 @@ Retrieves multiple photos from the device's album.<br>
 Selected images are returned as an array of identifiers of image, image data (or URIs) and exif of image files.<br>
 
 ```javascript
-window.plugin.snappi.assetspicker.getPicture([onSuccess][onsuccess], [onCancel][oncancel], [options][options]);
+window.plugin.snappi.assetspicker.getPicture(onSuccess, onCancel, options);
 ```
 
 This function opens photo chooser dialog, from which multiple photos from the album can be selected.
@@ -133,13 +133,13 @@ function pickPictures()
 ```
 
 ### getById
-Retrieve a photo with AssetsId.<br>
+Retrieve a photo with uuid of asset.<br>
 
 ```javascript
-window.plugin.snappi.assetspicker.getById(uuid, [orig_ext], [onGetById][ongetbyid], [onCancel][oncancel], [options][options]);
+window.plugin.snappi.assetspicker.getById(uuid, [orig_ext,] onGetById, onCancel, options);
 ```
 
-This function gets a Assets with AssetsId.
+This function gets a Assets with uuid. If orig_ext parameter is not specified, then default value (JPG) is set.
 The return picture will be sent to the [onGetById][ongetbyid] function, returned picture is a dictionary value as following formats;
 ```javascript
 {
