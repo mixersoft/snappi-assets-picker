@@ -15,23 +15,26 @@
  */
 
 cordova.define("cordova/plugin/AssetsPickerPlugin", function(require, exports, module) {
-
-                    var exec = require('cordova/exec');
-                    var AssetsPickerPlugin = function(){};
-
-                    AssetsPickerPlugin.prototype.getPicture = function(success, failure, options) {
-                        exec(success, failure, "CAssetsPickerPlugin", "getPicture", [options]);
-                    };
                
-                    AssetsPickerPlugin.prototype.getById = function(id, success, failure, options) {
-                        exec(success, failure, "CAssetsPickerPlugin", "getById", [id, options]);
-                    };
-
-                    var myplugin = new AssetsPickerPlugin();
-
-                    module.exports = myplugin;
-
-                });
+               var exec = require('cordova/exec');
+               var AssetsPickerPlugin = function(){};
+               
+               AssetsPickerPlugin.prototype.getPicture = function(success, failure, options) {
+               exec(success, failure, "CAssetsPickerPlugin", "getPicture", [options]);
+               };
+               
+               AssetsPickerPlugin.prototype.getById = function(uuid, orig_ext, success, failure, options) {
+               if (arguments.length == 5)
+               exec(success, failure, "CAssetsPickerPlugin", "getById", [uuid, orig_ext, options]);
+               else
+               exec(orig_ext, success, "CAssetsPickerPlugin", "getById", [uuid, "JPG", failure]);
+               };
+               
+               var myplugin = new AssetsPickerPlugin();
+               
+               module.exports = myplugin;
+               
+               });
 
 var AssetsPickerPlugin = cordova.require("cordova/plugin/AssetsPickerPlugin");
 

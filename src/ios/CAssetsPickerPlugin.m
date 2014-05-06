@@ -7,6 +7,10 @@
 //
 
 #import "CAssetsPickerPlugin.h"
+#import "URLParser.h"
+
+#define EXT_JPG     @"JPG"
+#define EXT_PNG     @"PNG"
 
 
 @implementation CAssetsPickerPlugin {
@@ -16,10 +20,10 @@
     NSDictionary *_overlays;
     NSDictionary *_overlayIcons;
     NSURL *_assetURL;
+    NSString *_uuid;
     int _targetWidth;
     int _targetHeight;
 }
-
 
 #pragma  mark - Interfaces
 
@@ -55,8 +59,8 @@
     {
         self.popover = [[UIPopoverController alloc] initWithContentViewController:self.picker];
         self.popover.delegate = self;
-        
-        [self.popover presentPopoverFromRect:self.viewController.view.frame inView:self.viewController.view permittedArrowDirections:UIPopoverArrowDirectionUnknown animated:YES];
+        CGRect frame = CGRectMake(100, 100, 300, 200); // self.viewController.view.frame
+        [self.popover presentPopoverFromRect:frame inView:self.viewController.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
     {
@@ -71,15 +75,32 @@
     self.latestCommand = command;
     
     [self initOptions];
-    if ([command.arguments count] > 1)
+    if ([command.arguments count] > 2)
     {
-        // get id
+        // get id or uuid
         NSString *url = [command.arguments objectAtIndex:0];
         if (url != nil)
-            _assetURL = [NSURL URLWithString:url];
+        {
+            NSURL *temp = [NSURL URLWithString:url];
+            if ([temp.scheme isEqualToString:@"assets-library"]) {
+                _assetURL = [NSURL URLWithString:url];
+                _uuid = nil;
+            }
+            else {
+                _assetURL = nil;
+                _uuid = [NSString stringWithFormat:@"%@", url];
+                
+                // get orig_ext
+                NSString *origExt = [command.arguments objectAtIndex:1];
+                
+                NSString *urlString = [NSString stringWithFormat:@"assets-library://asset/asset.%@?id=%@?ext=%@", origExt, _uuid, origExt];
+                
+                _assetURL = [NSURL URLWithString:urlString];
+            }
+        }
 
         // get options
-        NSDictionary *jsonData = [command.arguments objectAtIndex:1];
+        NSDictionary *jsonData = [command.arguments objectAtIndex:2];
         [self getOptions:jsonData];
         
     }
@@ -93,10 +114,21 @@
         CDVPluginResult *pluginResult = nil;
         NSString *resultJS = nil;
         
-        NSDictionary *retValues = [self objectFromAsset:asset fromThumbnail:NO];
+        if (asset == nil)
+        {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"There is no corresponding asset!"];
+            
+            resultJS = [pluginResult toErrorCallbackString:command.callbackId];
+        }
+        else
+        {
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retValues];
-        resultJS = [pluginResult toSuccessCallbackString:command.callbackId];
+            NSDictionary *retValues = [self objectFromAsset:asset fromThumbnail:NO];
+            
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:retValues];
+            resultJS = [pluginResult toSuccessCallbackString:command.callbackId];
+        }
+        
         [self writeJavascript:resultJS];
         
         //
@@ -130,6 +162,11 @@
     _targetWidth = -1;
     _targetHeight = -1;
 }
+
+/**
+ * parse options parameter and set it to local variables
+ *
+ */
 
 - (void)getOptions: (NSDictionary *)jsonData
 {
@@ -198,61 +235,87 @@
     NSMutableDictionary* retValues = [NSMutableDictionary dictionaryWithCapacity:3];
     NSString *strUrl = [NSString stringWithFormat:@"%@", [[asset valueForProperty:ALAssetPropertyAssetURL] absoluteString] ];
     // obj.id
-    [retValues setObject:strUrl forKey:@"id"];
+    [retValues setObject:strUrl forKey:kIdKey];
+    
+    // obj.uuid
+    NSString *uuidString = @"";
+    URLParser *parser = [URLParser parserWithURL:[asset valueForProperty:ALAssetPropertyAssetURL]];
+    uuidString = [NSString stringWithFormat:@"%@", [parser valueForKey:@"id"]]; // ?id=xxx-xx&ext=JPG
+    [retValues setObject:uuidString forKey:kUuidKey];
+    
+    // obj.orig-ext
+    NSString *ext = [NSString stringWithFormat:@"%@", [parser valueForKey:@"ext"]];
+    [retValues setObject:ext forKey:kOrigExtKey];
     
     // obj.data
+    NSData *data = nil;
+    NSString *newExt = nil;
+    UIImage *image = nil;
+    
+    if (fromThumbnail)
+        image = [UIImage imageWithCGImage:asset.thumbnail];
+    else
+        image = [UIImage imageWithCGImage:asset.defaultRepresentation.fullResolutionImage];
+    
+    if (_targetWidth <= 0 && _targetHeight <= 0)
+    {
+        image = image;
+    }
+    else if (_targetWidth <= 0)
+    {
+        CGFloat scale = _targetHeight / image.size.height;
+        image = [CAssetsPickerPlugin scaleImage:image scale:scale];
+    }
+    else if (_targetHeight <= 0)
+    {
+        CGFloat scale = _targetWidth / image.size.width;
+        image = [CAssetsPickerPlugin scaleImage:image scale:scale];
+    }
+    else
+    {
+        CGFloat scaleX = _targetWidth / image.size.width;
+        CGFloat scaleY = _targetHeight / image.size.height;
+        
+        CGFloat scale = scaleX;
+        if (scaleX > scaleY)
+        {
+            scale = scaleY;
+        }
+        image = [CAssetsPickerPlugin scaleImage:image scale:scale];
+    }
+    
+    // Get the image data (blocking; around 1 second)
+    if (_encodeType == EncodingTypeJPEG)
+    {
+        newExt = EXT_JPG;
+        data = UIImageJPEGRepresentation(image, _quality / 100.0f);
+    }
+    else
+    {
+        newExt = EXT_PNG;
+        data = UIImagePNGRepresentation(image);
+    }
+    
     if (_destType == DestinationTypeDataURL) {
         NSString *strEncoded = @"";
-        NSData *data = nil;
         
-        UIImage *image = nil;
-        if (fromThumbnail)
-            image = [UIImage imageWithCGImage:asset.thumbnail];
-        else
-            image = [UIImage imageWithCGImage:asset.defaultRepresentation.fullResolutionImage];
-        
-        if (_targetWidth <= 0 && _targetHeight <= 0)
-        {
-            image = image;
-        }
-        else if (_targetWidth <= 0)
-        {
-            CGFloat scale = _targetHeight / image.size.height;
-            image = [CAssetsPickerPlugin scaleImage:image scale:scale];
-        }
-        else if (_targetHeight <= 0)
-        {
-            CGFloat scale = _targetWidth / image.size.width;
-            image = [CAssetsPickerPlugin scaleImage:image scale:scale];
-        }
-        else
-        {
-            CGFloat scaleX = _targetWidth / image.size.width;
-            CGFloat scaleY = _targetHeight / image.size.height;
-            
-            CGFloat scale = scaleX;
-            if (scaleX > scaleY)
-            {
-                scale = scaleY;
-            }
-            image = [CAssetsPickerPlugin scaleImage:image scale:scale];
-        }
-        
-        if (_encodeType == EncodingTypeJPEG)
-        {
-            data = UIImageJPEGRepresentation(image, _quality / 100.0f);
-        }
-        else
-        {
-            data = UIImagePNGRepresentation(image);
-        }
         strEncoded = [data base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
         
-        [retValues setObject:strEncoded forKey:@"data"];
+        [retValues setObject:strEncoded forKey:kDataKey];
     }
     else {
-        //[retValues setObject:[asset valueForProperty:ALAssetPropertyAssetURL] forKey:@"data"];
-        [retValues setObject:strUrl forKey:@"data"];
+        //from http://codrspace.com/vote539/writing-a-custom-camera-plugin-for-phonegap/
+        
+        // Get a file path to save the JPEG
+        NSString *imagePath = [CAssetsPickerPlugin getFilePath:uuidString ext:newExt];
+        
+        // Write the data to the file
+        [data writeToFile:imagePath atomically:YES];
+        
+        imagePath = [NSString stringWithFormat:@"file://%@", imagePath];
+        
+        //[retValues setObject:strUrl forKey:kDataKey];
+        [retValues setObject:imagePath forKey:kDataKey];
     }
     
     // obj.exif
@@ -443,5 +506,20 @@
     return newImage;
 }
 
++ (NSString *)getAppPath
+{
+    // Get a file path to save the JPEG
+    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentsDirectory = [paths objectAtIndex:0];
+    return documentsDirectory;
+}
+
++ (NSString *)getFilePath:(NSString *)uuidString ext:(NSString *)ext
+{
+    NSString *documentsDirectory = [CAssetsPickerPlugin getAppPath];
+    NSString* filename = [NSString stringWithFormat:@"%@.%@", uuidString, ext];
+    NSString* imagePath = [documentsDirectory stringByAppendingPathComponent:filename];
+    return imagePath;
+}
 
 @end

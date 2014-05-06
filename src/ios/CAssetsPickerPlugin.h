@@ -21,6 +21,8 @@ typedef enum {
 
 // return value
 #define kIdKey      @"id"
+#define kUuidKey    @"uuid"
+#define kOrigExtKey @"orig_ext"
 #define kDataKey    @"data"
 #define kExifKey    @"exif"
 #define kDateTimeOriginalKey    @"DateTimeOriginal"
@@ -54,4 +56,6 @@ typedef enum {
 
 + (NSString *)date2str:(NSDate *)convertDate withFormat:(NSString *)formatString;
 + (UIImage *)scaleImage:(UIImage *)image scale:(CGFloat)scale;
++ (NSString *)getAppPath;
++ (NSString *)getFilePath:(NSString *)uuidString ext:(NSString *)ext;
 @end

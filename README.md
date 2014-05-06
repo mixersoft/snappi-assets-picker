@@ -83,6 +83,8 @@ The return array will be sent to the [onSuccess][onsuccess] function, each item 
 ```javascript
 {
 id : identifier,
+uuid : uuid,
+orig_ext : orig_ext, 
 data : imageData,
 exif : {
     DateTimeOriginal : dateTimeOriginal,
@@ -93,7 +95,17 @@ exif : {
 ```
 
 ##### id
-identifier string of selected photo.
+identifier string of selected photo. This is url of the asset which format is as ```assets-library://asset/asset.JPG?id=12345678-1234-1342-52DB-ABE03FDF1234&ext=JPG```.
+
+##### uuid
+uuid of selected photo. Asset has format ```assets-library://asset/asset.{ext}?id={uuid}&ext={ext}```. uuid is unique identifier of this photo.
+When you get picture with FILE_URI (options.destinationType == Camera.DestinationType.FILE_URI), then the plugin make a new file named as {uuid}.{encodingType} on the plugin space and returns the path of this file as data value. for instance, options.encodingType = JPEG and uuid = 12345678-1234-1342-52DB-ABE03FDF1234, then new file is named as "12345678-1234-1342-52DB-ABE03FDF1234.JPG".
+Javascript functions can access this new image file using URL(data value) directly.
+
+##### orig_ext
+Original extension of image file. This value is used for [getById][getById] function. The corresponding value would be "JPG" or "PNG".
+
+
 ##### data
 The data of image is one of the following formats, depending on the options you specify:
 - A String containing the Base64 encoded photo image.
@@ -124,7 +136,7 @@ function pickPictures()
 Retrieve a photo with AssetsId.<br>
 
 ```javascript
-window.plugin.snappi.assetspicker.getById(AssetId, [onGetById][ongetbyid], [onCancel][oncancel], [options][options]);
+window.plugin.snappi.assetspicker.getById(uuid, [orig_ext], [onGetById][ongetbyid], [onCancel][oncancel], [options][options]);
 ```
 
 This function gets a Assets with AssetsId.
@@ -132,6 +144,8 @@ The return picture will be sent to the [onGetById][ongetbyid] function, returned
 ```javascript
 {
 id : identifier,
+uuid : uuid,
+orig_ext : orig_ext,
 data : imageData,
 exif : {
     DateTimeOriginal : dateTimeOriginal,
@@ -146,7 +160,7 @@ Same as an item of returned array on [onSuccess][onsuccess] callback.
 
 #### Example
 ```javascript
-function getAPictureWithId(AssetId)
+function getAPictureWithId(uuid, orig_ext)
 {
     var options = {
         quality: 75,
@@ -155,7 +169,7 @@ function getAPictureWithId(AssetId)
         targetWidth: 100,
         targetHeight: 100
     };
-    window.plugin.snappi.assetspicker.getById(AssetId, onGetById, onCancel, options);
+    window.plugin.snappi.assetspicker.getById(uuid, orig_ext, onGetById, onCancel, options);
 }
 ```
 
@@ -171,7 +185,9 @@ function(dataArray) {
 - dataArray: array of image with identifier and image data
 ```javascript
 {
-id : identifier,	// unique identifier string of the image
+id : identifier,	// unique identifier string of the image. (String)
+uuid : uuid,		// uuid of the image. (String)
+orig_ext : orig_ext,	// extension of the image file. [JPG | PNG]
 data : imageData,	// image data, Base64 encoding of the image data, OR the image file URI, depending on options used. (String)
 exif : {
     DateTimeOriginal : dateTimeOriginal, 	// datetime when the image was taken
@@ -191,7 +207,7 @@ function onSuccess(dataArray) {
          var imageId = item.id;
          
          // get picture by Id
-         window.plugin.snappi.assetspicker.getById(item.id, onGetById, onCancel, options);
+         window.plugin.snappi.assetspicker.getById(item.uuid, item.orig_ext, onGetById, onCancel, options);
     }
 }
 ```
@@ -220,7 +236,9 @@ function(imageData) {
 - imageData: image data of selected image, just like an item of returned array on [onSucess][onsuccess] callback.
 ```javascript
 {
-id : identifier,	// unique identifier string of the image
+id : identifier,	// unique identifier string of the image. (String)
+uuid : uuid,		// uuid of the image. (String)
+orig_ext : orig_ext,	// extension of the image file. [JPG | PNG]
 data : imageData,	// image data, Base64 encoding of the image data, OR the image file URI, depending on options used. (String)
 exif : {
     DateTimeOriginal : dateTimeOriginal, 	// datetime when the image was taken
@@ -380,6 +398,15 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         </script>
         <script type="text/javascript">
             var selectedAssets = new Array();
+            var isFileUri = true; // get uri or data
+            
+            var isResize = true; // use resize feature or not
+            var targetWidth = 640;
+            var targetHeight = 640;
+            
+            var isUseGetById = false; // call getById to get picture data or access directly
+            var isResizeOnGetById = false;
+            
             // called when "pick" button is clicked
             function onPick()
             {
@@ -397,13 +424,20 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
                 
                 var options = {
                     quality: 75,
-                    destinationType: Camera.DestinationType.FILE_URI,
+                    
                     encodingType: Camera.EncodingType.JPEG,
-                    targetWidth: 100,
-                    targetHeight: 100,
                     overlay: overlayObj
                 };
-
+                if (isFileUri == true)
+                    options.destinationType = Camera.DestinationType.FILE_URI;
+                else
+                    options.destinationType = Camera.DestinationType.DATA_URL;
+                if (isResize == true)
+                {
+                    options.targetWidth = targetWidth;
+                    options.targetHeight = targetHeight;
+                }
+                
                 window.plugin.snappi.assetspicker.getPicture(onSuccess, onCancel, options);
             }
         
@@ -428,17 +462,31 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             for (i = 0; i < selectedAssets.length; i++)
             {
                 var obj = selectedAssets[i];
-                //var image = document.getElementById(obj.id);
-                //image.src = "data:image/jpeg;base64," + obj.data;
                 
-                var options = {
-                    quality: 75,
-                    destinationType: Camera.DestinationType.DATA_URL,
-                    encodingType: Camera.EncodingType.JPEG,
-                    targetWidth: 100,
-                    targetHeight: 100
-                };
-                window.plugin.snappi.assetspicker.getById(obj.id, onGetById, onCancel, options);
+                var image = document.getElementById(obj.id);
+                if (isFileUri)
+                {
+                    if (isUseGetById)
+                    {
+                        var options = {
+                            quality: 75,
+                            destinationType: Camera.DestinationType.DATA_URL,
+                            encodingType: Camera.EncodingType.JPEG
+                        };
+                        
+                        if (isResizeOnGetById == true)
+                        {
+                            options.targetWidth = targetWidth;
+                            options.targetHeight = targetHeight;
+                        }
+                        window.plugin.snappi.assetspicker.getById(obj.uuid, obj.orig_ext, onGetById, onCancel, options);
+                    }
+                    else
+                        image.src = obj.data;
+
+                }
+                else
+                    image.src = "data:image/jpeg;base64," + obj.data;
             }
         }
         
@@ -481,6 +529,7 @@ This software is released under the [Apache 2.0 License][apache2_license].
 [onsuccess]: #onSuccess
 [oncancel]: #onCancel
 [options]: #options
+[getById]: #getById
 [ongetbyid]: #onGetById
 [CLI]: http://cordova.apache.org/docs/en/3.0.0/guide_cli_index.md.html#The%20Command-line%20Interface
 [PGB]: http://docs.build.phonegap.com/en_US/3.3.0/index.html

@@ -57,6 +57,10 @@
 	<header-file src="src/ios/AssetsPicker/NSDate+timeDescription.h" />
         <source-file src="src/ios/AssetsPicker/NSDate+timeDescription.m" />
 
+	<!-- helper header and source files -->
+	<header-file src="src/ios/Helper/URLParser.h" />
+        <source-file src="src/ios/Helper/URLParser.m" />
+
 	<!-- CTAssetsPickerController resource files -->
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerChecked.png" />
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerChecked@2x.png" />
