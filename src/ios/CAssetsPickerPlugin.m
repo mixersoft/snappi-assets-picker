@@ -247,6 +247,10 @@
     NSString *ext = [NSString stringWithFormat:@"%@", [parser valueForKey:@"ext"]];
     [retValues setObject:ext forKey:kOrigExtKey];
     
+    // obj.label
+    NSString *filename = [NSString stringWithFormat:@"%@", [[asset defaultRepresentation] filename]];
+    [retValues setObject:filename forKey:kLabelKey];
+    
     // obj.data
     NSData *data = nil;
     NSString *newExt = nil;

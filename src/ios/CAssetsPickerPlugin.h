@@ -23,6 +23,7 @@ typedef enum {
 #define kIdKey      @"id"
 #define kUuidKey    @"uuid"
 #define kOrigExtKey @"orig_ext"
+#define kLabelKey   @"label"
 #define kDataKey    @"data"
 #define kExifKey    @"exif"
 #define kDateTimeOriginalKey    @"DateTimeOriginal"

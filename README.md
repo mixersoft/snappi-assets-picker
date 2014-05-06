@@ -84,6 +84,7 @@ The return array will be sent to the [onSuccess][onsuccess] function, each item 
 {
 id : identifier,
 uuid : uuid,
+label : label,
 orig_ext : orig_ext, 
 data : imageData,
 exif : {
@@ -101,6 +102,9 @@ identifier string of selected photo. This is url of the asset which format is as
 uuid of selected photo. Asset has format ```assets-library://asset/asset.{ext}?id={uuid}&ext={ext}```. uuid is unique identifier of this photo.
 When you get picture with FILE_URI (options.destinationType == Camera.DestinationType.FILE_URI), then the plugin make a new file named as {uuid}.{encodingType} on the plugin space and returns the path of this file as data value. for instance, options.encodingType = JPEG and uuid = 12345678-1234-1342-52DB-ABE03FDF1234, then new file is named as "12345678-1234-1342-52DB-ABE03FDF1234.JPG".
 Javascript functions can access this new image file using URL(data value) directly.
+
+##### label
+File name of the original image file. Photos are saved as "IMG_xxxxx.JPG" in general and the plugin returns this name of file like "IMG_00001.JPG".
 
 ##### orig_ext
 Original extension of image file. This value is used for [getById][getById] function. The corresponding value would be "JPG" or "PNG".
@@ -145,6 +149,7 @@ The return picture will be sent to the [onGetById][ongetbyid] function, returned
 {
 id : identifier,
 uuid : uuid,
+label : label,
 orig_ext : orig_ext,
 data : imageData,
 exif : {
@@ -187,6 +192,7 @@ function(dataArray) {
 {
 id : identifier,	// unique identifier string of the image. (String)
 uuid : uuid,		// uuid of the image. (String)
+label : label,		// file name of the image. (String)
 orig_ext : orig_ext,	// extension of the image file. [JPG | PNG]
 data : imageData,	// image data, Base64 encoding of the image data, OR the image file URI, depending on options used. (String)
 exif : {
@@ -238,6 +244,7 @@ function(imageData) {
 {
 id : identifier,	// unique identifier string of the image. (String)
 uuid : uuid,		// uuid of the image. (String)
+label : label,		// file name of the image. (String)
 orig_ext : orig_ext,	// extension of the image file. [JPG | PNG]
 data : imageData,	// image data, Base64 encoding of the image data, OR the image file URI, depending on options used. (String)
 exif : {
