@@ -33,6 +33,7 @@
 @interface CTAssetsViewCell : UICollectionViewCell
 
 @property (nonatomic, assign, getter = isEnabled) BOOL enabled;
+@property (nonatomic, assign, getter = isOverlay) BOOL overlay;
 
 - (void)bind:(ALAsset *)asset;
 

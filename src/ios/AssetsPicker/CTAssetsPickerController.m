@@ -57,6 +57,7 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
         _assetsFilter       = [ALAssetsFilter allAssets];
         _selectedAssets     = [[NSMutableArray alloc] init];
         _selectedAssetObjs = [[NSMutableArray alloc] init];
+        _overlayAssets      = [[NSMutableArray alloc] init];
         _showsCancelButton  = YES;
 
         self.preferredContentSize = kPopoverContentSize;
@@ -80,7 +81,8 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
     {
         NSString *url = [self.selectedAssetObjs objectAtIndex:i];
         [[CTAssetsPickerController defaultAssetsLibrary] assetForURL:[NSURL URLWithString:url] resultBlock:^(ALAsset *asset) {
-            [self performSelector:@selector(selectAsset:) withObject:asset afterDelay:NO];
+            //[self performSelector:@selector(selectAsset:) withObject:asset afterDelay:NO];
+            [self performSelector:@selector(overlayAsset:) withObject:asset afterDelay:NO];
         } failureBlock:^(NSError *error) {
         }];
     }
@@ -184,6 +186,15 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
     [self.selectedAssets replaceObjectAtIndex:index withObject:object];
 }
 
+- (void)insertOverlay:(id)object atIndex:(NSUInteger)index
+{
+    [self.overlayAssets insertObject:object atIndex:index];
+}
+
+- (NSUInteger)countOfOverlayAssets
+{
+    return self.overlayAssets.count;
+}
 
 #pragma mark - Select / Deselect Asset
 
@@ -195,6 +206,12 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 - (void)deselectAsset:(ALAsset *)asset
 {
     [self removeObjectFromSelectedAssetsAtIndex:[self.selectedAssets indexOfObject:asset]];
+}
+
+#pragma mark - Overlay Asset
+- (void)overlayAsset:(ALAsset *)asset
+{
+    [self insertOverlay:asset atIndex:[self countOfOverlayAssets]];
 }
 
 

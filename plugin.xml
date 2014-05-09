@@ -70,6 +70,8 @@
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerLocked@2x.png" />
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerVideo.png" />
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerVideo@2x.png" />
+	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerOverlay.png" />
+	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerOverlay@2x.png" />
 	
 	<!-- system frameworks -->
 	<framework src="AssetsLibrary.framework" weak="true" />

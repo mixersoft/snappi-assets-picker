@@ -309,6 +309,12 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     else
         cell.enabled = YES;
     
+    // Overlay feature
+    if ([self.picker.overlayAssets containsObject:asset])
+    {
+        cell.overlay = YES;
+    }
+    
     // XXX
     // Setting `selected` property blocks further deselection.
     // Have to call selectItemAtIndexPath too. ( ref: http://stackoverflow.com/a/17812116/1648333 )

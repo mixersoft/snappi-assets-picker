@@ -54,6 +54,9 @@ static UIImage *checkedIcon;
 static UIColor *selectedColor;
 static UIColor *disabledColor;
 
+static UIImage *overlayIcon;
+static UIColor *overlayColor;
+
 + (void)initialize
 {
     titleFont       = [UIFont systemFontOfSize:12];
@@ -63,6 +66,9 @@ static UIColor *disabledColor;
     checkedIcon     = [UIImage imageNamed:@"CTAssetsPickerChecked"];
     selectedColor   = [UIColor colorWithWhite:1 alpha:0.3];
     disabledColor   = [UIColor colorWithWhite:1 alpha:0.9];
+    
+    overlayIcon     = [UIImage imageNamed:@"CTAssetsPickerOverlay"];
+    overlayColor    = [UIColor colorWithWhite:1 alpha:0.3];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -94,6 +100,11 @@ static UIColor *disabledColor;
     [self setNeedsDisplay];
 }
 
+- (void)setOverlay:(BOOL)overlay
+{
+    _overlay = overlay;
+    [self setNeedsDisplay];
+}
 
 #pragma mark - Draw Rect
 
@@ -109,8 +120,14 @@ static UIColor *disabledColor;
     if (!self.isEnabled)
         [self drawDisabledViewInRect:rect];
     
-    else if (self.selected)
-        [self drawSelectedViewInRect:rect];
+    else {
+        
+        if (self.overlay && !self.selected)
+            [self drawOverlayViewInRect:rect];
+        
+        else if (self.selected)
+            [self drawSelectedViewInRect:rect];
+    }
 }
 
 - (void)drawThumbnailInRect:(CGRect)rect
@@ -171,6 +188,15 @@ static UIColor *disabledColor;
     CGContextFillRect(context, rect);
     
     [checkedIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - checkedIcon.size.width, CGRectGetMinY(rect))];
+}
+
+- (void)drawOverlayViewInRect:(CGRect)rect
+{
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, overlayColor.CGColor);
+    CGContextFillRect(context, rect);
+    
+    [overlayIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - overlayIcon.size.width, CGRectGetMinY(rect))];
 }
 
 

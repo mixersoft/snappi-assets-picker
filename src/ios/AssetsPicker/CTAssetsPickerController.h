@@ -59,6 +59,8 @@
 
 @property (nonatomic, strong) NSMutableArray *selectedAssetObjs;
 
+@property (nonatomic, strong) NSMutableArray *overlayAssets;
+
 /**
  *  Determines whether or not the cancel button is visible in the picker.
  *
@@ -85,6 +87,8 @@
  *  @param asset The asset to be deselected.
  */
 - (void)deselectAsset:(ALAsset *)asset;
+
+- (void)overlayAsset:(ALAsset *)asset;
 
 @end
 
