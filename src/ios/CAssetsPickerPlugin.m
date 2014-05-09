@@ -335,11 +335,11 @@
     NSDate *date = [asset valueForProperty:ALAssetPropertyDate];
     if (date != nil)
     {
-        [exif setObject:@"" forKey:kDateTimeOriginalKey];
+        [exif setObject:[CAssetsPickerPlugin date2str:date withFormat:DATETIME_FORMAT] forKey:kDateTimeOriginalKey];
     }
     else
     {
-        [exif setObject:[CAssetsPickerPlugin date2str:date withFormat:DATETIME_FORMAT] forKey:kDateTimeOriginalKey];
+        [exif setObject:@"" forKey:kDateTimeOriginalKey];
     }
     
     //obj.exif.PixelXDimension
