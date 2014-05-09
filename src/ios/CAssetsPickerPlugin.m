@@ -17,7 +17,7 @@
     int _quality;
     DestinationType _destType;
     EncodingType _encodeType;
-    NSDictionary *_overlays;
+    NSDictionary *_overlays;    // {overlayName, array of assetIds}
     NSDictionary *_overlayIcons;
     NSURL *_assetURL;
     NSString *_uuid;
@@ -216,15 +216,21 @@
         for (int i = 0; i < [keys count]; i++) {
             NSString *key = [keys objectAtIndex:i];
             NSArray *value = [overlay objectForKey:key];
-            // for debug
-            /*
-            for (int j = 0; j < [value count]; j++)
-            {
-                NSString *url = [value objectAtIndex:j];
-                url = url;
+            
+            NSMutableArray *arrayUrl = [[NSMutableArray alloc] init];
+            // {overlayName, arrayOf "uuid.ext" items}
+            for (NSString *uuid_ext in value) {
+                NSArray *urlComponents = [uuid_ext componentsSeparatedByString:@"."];
+                if ([urlComponents count] >= 2)
+                {
+                    NSString *uuid = [urlComponents objectAtIndex:0];
+                    NSString *ext = [urlComponents objectAtIndex:1];
+                    NSString *urlString = [CAssetsPickerPlugin getUrlStringWithUuid:uuid ext:ext];
+                    [arrayUrl addObject:urlString];
+                }
             }
-             */
-            [_overlays setValue:value forKey:key];
+            
+            [_overlays setValue:arrayUrl forKey:key];
         }
     }
     
@@ -515,7 +521,17 @@
     // Get a file path to save the JPEG
     NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString* documentsDirectory = [paths objectAtIndex:0];
-    return documentsDirectory;
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"/tmp"];
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:dataPath])
+    {
+        NSError *error = nil;
+        [[NSFileManager defaultManager] createDirectoryAtPath:dataPath withIntermediateDirectories:NO attributes:nil error:&error]; //Create folder
+        if (error) {
+            NSLog(@"error occurred in create tmp folder : %@", [error localizedDescription]);
+        }
+    }
+    return dataPath;
 }
 
 + (NSString *)getFilePath:(NSString *)uuidString ext:(NSString *)ext
@@ -524,6 +540,18 @@
     NSString* filename = [NSString stringWithFormat:@"%@.%@", uuidString, ext];
     NSString* imagePath = [documentsDirectory stringByAppendingPathComponent:filename];
     return imagePath;
+}
+
++ (NSURL *)getUrlFromUrlString:(NSString *)urlString
+{
+    NSURL *url = [NSURL URLWithString:urlString];
+    return url;
+}
+
++ (NSString *)getUrlStringWithUuid:(NSString *)uuid ext:(NSString *)ext;
+{
+    NSString *urlString = [NSString stringWithFormat:@"assets-library://asset/asset.%@?id=%@?ext=%@", ext, uuid, ext];
+    return urlString;
 }
 
 @end

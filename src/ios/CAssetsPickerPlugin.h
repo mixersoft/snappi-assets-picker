@@ -59,4 +59,6 @@ typedef enum {
 + (UIImage *)scaleImage:(UIImage *)image scale:(CGFloat)scale;
 + (NSString *)getAppPath;
 + (NSString *)getFilePath:(NSString *)uuidString ext:(NSString *)ext;
++ (NSURL *)getUrlFromUrlString:(NSString *)urlString;
++ (NSString *)getUrlStringWithUuid:(NSString *)uuid ext:(NSString *)ext;
 @end

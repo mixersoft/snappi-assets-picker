@@ -278,7 +278,7 @@ Optional parameters to customize the settings.
   popoverOptions: CameraPopoverOptions,
   saveToPhotoAlbum: false,
   scrollToDate: new Date(),
-  overlay: {overlayName: AssetsIdsArray}
+  overlay: {overlayName: array of "uuid.ext"}
   };
 ```
 
@@ -319,7 +319,7 @@ Camera.MediaType = {
 - correctOrientation: Rotate the image to correct for the orientation of the device during capture. (Boolean)
 - saveToPhotoAlbum: Save the image to the photo album on the device after capture. (Boolean)
 - scrollToDate: Scroll to indicated date when open photo chooser dialog.
-- overlay: Array of IDs of images to be with overlay. Show overlay icons on these images when open photo chooser dialog. IDs could be returned [onSuccess][onsuccess] callback. 
+- overlay: Array of "uuid.ext" of images to be with overlay. Show overlay icons on these images when open photo chooser dialog. IDs could be returned [onSuccess][onsuccess] callback. 
 - popoverOptions: iOS only options to specify popover location in iPad. Defined in CameraPopoverOptions.
 
 #### CameraPopoverOptions
@@ -417,17 +417,17 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             // called when "pick" button is clicked
             function onPick()
             {
-                var assetsIds = new Array();
+                var assetsUuidExt = new Array();
                 if (selectedAssets != null && selectedAssets.length != 0)
                 {
                     for (var i = 0; i < selectedAssets.length; i++)
                     {
-                        assetsIds[i] = selectedAssets[i].id;
+                        assetsUuidExt[i] = selectedAssets[i].uuid + "." + selectedAssets[i].orig_ext;
                     }
                 }
                 var overlayObj = {};
                 
-                overlayObj[Camera.Overlay.PREVIOUS_SELECTED] = assetsIds;
+                overlayObj[Camera.Overlay.PREVIOUS_SELECTED] = assetsUuidExt;
                 
                 var options = {
                     quality: 75,
