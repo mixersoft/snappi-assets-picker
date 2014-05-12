@@ -31,6 +31,9 @@
 #import "CTAssetsViewCell.h"
 #import "CTAssetsSupplementaryView.h"
 
+#import "MJPhotoBrowser.h"
+#import "MJPhoto.h"
+
 
 
 NSString * const CTAssetsViewCellIdentifier = @"CTAssetsViewCellIdentifier";
@@ -53,6 +56,7 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 @property (nonatomic, weak) CTAssetsPickerController *picker;
 @property (nonatomic, strong) NSMutableArray *assets;
+@property (nonatomic, strong) NSMutableArray *photos;
 
 @end
 
@@ -90,6 +94,15 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 {
     [super viewDidLoad];
     [self setupViews];
+    
+    // attach long press gesture to collectionView
+    UILongPressGestureRecognizer *lpgr
+    = [[UILongPressGestureRecognizer alloc]
+       initWithTarget:self action:@selector(handleLongPress:)];
+    lpgr.minimumPressDuration = .5; //seconds
+    lpgr.delaysTouchesBegan = YES;
+    lpgr.delegate = self;
+    [self.collectionView addGestureRecognizer:lpgr];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -268,9 +281,23 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         
         if (CGPointEqualToPoint(self.collectionView.contentOffset, CGPointZero))
             [self.collectionView setContentOffset:CGPointMake(0, self.collectionViewLayout.collectionViewContentSize.height)];
+        
+        self.photos = [NSMutableArray arrayWithCapacity:self.assets.count];
+        // 1.create photo datas
+        for (int i = 0; i < self.assets.count; i++) {
+            // 替换为中等尺寸图片
+            MJPhoto *photo = [[MJPhoto alloc] init];
+            photo.asset = [self.assets objectAtIndex:i];
+            [self.photos addObject:photo];
+            
+            NSIndexPath *path = [NSIndexPath indexPathForItem:i inSection:0];
+            UICollectionViewCell *theCell = [self.collectionView cellForItemAtIndexPath:path];
+            photo.srcView = theCell;
+        }
     }
     else
     {
+        self.photos = [[NSMutableArray alloc] init];
         [self showNoAssets];
     }
 }
@@ -325,6 +352,9 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     }
     
     [cell bind:asset];
+    
+    MJPhoto *photo = [self.photos objectAtIndex:indexPath.row];
+    photo.srcView = cell;
     
     return cell;
 }
@@ -412,6 +442,41 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didUnhighlightAsset:)])
         [self.picker.delegate assetsPickerController:self.picker didUnhighlightAsset:asset];
+}
+
+#pragma mark - Long Press Gesture Handler
+-(void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    //if (gestureRecognizer.state != UIGestureRecognizerStateEnded) {
+    //    return;
+    //}
+    CGPoint p = [gestureRecognizer locationInView:self.collectionView];
+    
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:p];
+    if (indexPath == nil){
+        NSLog(@"couldn't find index path");
+    } else {
+        if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+            NSLog(@"UIGestureRecognizerStateEnded");
+            //Do Whatever You want on End of Gesture
+        }
+        else if (gestureRecognizer.state == UIGestureRecognizerStateBegan){
+            NSLog(@"UIGestureRecognizerStateBegan.");
+            //Do Whatever You want on Began of Gesture
+            // get the cell at indexPath (the one you long pressed)
+//            UICollectionViewCell* cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+            // do stuff with the cell
+            
+//            int count = self.assets.count;
+            
+            // 2.显示相册
+            MJPhotoBrowser *browser = [[MJPhotoBrowser alloc] init];
+            browser.currentPhotoIndex = indexPath.row; // 弹出相册时显示的第一张图片是？
+            browser.photos = self.photos; // 设置所有的图片
+            [browser show:nil];
+        }
+        
+    }
 }
 
 

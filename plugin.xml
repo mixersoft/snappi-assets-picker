@@ -73,6 +73,17 @@
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerOverlay.png" />
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerOverlay@2x.png" />
 	
+	<!-- MJPhotoBrowser source files -->
+	<header-file src="src/ios/MJPhotoBrowser/MJPhoto.h" />
+        <source-file src="src/ios/MJPhotoBrowser/MJPhoto.m" />
+	<header-file src="src/ios/MJPhotoBrowser/MJPhotoBrowser.h" />
+        <source-file src="src/ios/MJPhotoBrowser/MJPhotoBrowser.m" />
+	<header-file src="src/ios/MJPhotoBrowser/MJPhotoToolbar.h" />
+        <source-file src="src/ios/MJPhotoBrowser/MJPhotoToolbar.m" />
+	<header-file src="src/ios/MJPhotoBrowser/MJPhotoView.h" />
+        <source-file src="src/ios/MJPhotoBrowser/MJPhotoView.m" />
+
+	
 	<!-- system frameworks -->
 	<framework src="AssetsLibrary.framework" weak="true" />
     </platform>

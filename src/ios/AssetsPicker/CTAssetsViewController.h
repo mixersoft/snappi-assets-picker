@@ -30,7 +30,7 @@
 
 
 
-@interface CTAssetsViewController : UICollectionViewController
+@interface CTAssetsViewController : UICollectionViewController<UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) ALAssetsGroup *assetsGroup;
 
