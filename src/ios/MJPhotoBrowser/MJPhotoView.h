@@ -13,12 +13,17 @@
 - (void)photoViewImageFinishLoad:(MJPhotoView *)photoView;
 - (void)photoViewSingleTap:(MJPhotoView *)photoView;
 - (void)photoViewDidEndZoom:(MJPhotoView *)photoView;
-- (void)exitFullscreen;
+- (void)photoViewLongTap:(MJPhotoView *)photoView;
 @end
+
+
 
 @interface MJPhotoView : UIScrollView <UIScrollViewDelegate>
 // 图片
 @property (nonatomic, strong) MJPhoto *photo;
 // 代理
 @property (nonatomic, weak) id<MJPhotoViewDelegate> photoViewDelegate;
+
+- (void)hide;
+
 @end

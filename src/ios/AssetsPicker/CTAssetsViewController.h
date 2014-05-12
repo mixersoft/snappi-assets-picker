@@ -28,9 +28,13 @@
 #import <UIKit/UIKit.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
+@protocol CTAssetsViewControllerDelegate <NSObject>
 
+- (void) tapAsset:(ALAsset *)asset;
 
-@interface CTAssetsViewController : UICollectionViewController<UIGestureRecognizerDelegate>
+@end
+
+@interface CTAssetsViewController : UICollectionViewController<UIGestureRecognizerDelegate, CTAssetsViewControllerDelegate>
 
 @property (nonatomic, strong) ALAssetsGroup *assetsGroup;
 

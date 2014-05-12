@@ -60,10 +60,6 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 @end
 
-
-
-
-
 @implementation CTAssetsViewController
 
 
@@ -336,10 +332,13 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     else
         cell.enabled = YES;
     
+    MJPhoto *photo = [self.photos objectAtIndex:indexPath.row];
+    
     // Overlay feature
     if ([self.picker.overlayAssets containsObject:asset])
     {
         cell.overlay = YES;
+        photo.overlay = YES;
     }
     
     // XXX
@@ -349,11 +348,12 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     {
         cell.selected = YES;
         [collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
+        
+        photo.selected = YES;
     }
     
     [cell bind:asset];
-    
-    MJPhoto *photo = [self.photos objectAtIndex:indexPath.row];
+
     photo.srcView = cell;
     
     return cell;
@@ -396,6 +396,9 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didSelectAsset:)])
         [self.picker.delegate assetsPickerController:self.picker didSelectAsset:asset];
+    
+    MJPhoto *photo = [self.photos objectAtIndex:indexPath.row];
+    photo.selected = YES;
 }
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldDeselectItemAtIndexPath:(NSIndexPath *)indexPath
@@ -416,6 +419,9 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didDeselectAsset:)])
         [self.picker.delegate assetsPickerController:self.picker didDeselectAsset:asset];
+    
+    MJPhoto *photo = [self.photos objectAtIndex:indexPath.row];
+    photo.selected = NO;
 }
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath
@@ -471,6 +477,7 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
             
             // 2.显示相册
             MJPhotoBrowser *browser = [[MJPhotoBrowser alloc] init];
+            browser.assetsViewControllerDelegate = self;
             browser.currentPhotoIndex = indexPath.row; // 弹出相册时显示的第一张图片是？
             browser.photos = self.photos; // 设置所有的图片
             [browser show:nil];
@@ -479,5 +486,22 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     }
 }
 
+- (void)tapAsset:(ALAsset *)asset
+{
+    NSUInteger index = [self.assets indexOfObject:asset];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+
+    if ([[self.collectionView cellForItemAtIndexPath:indexPath] isSelected])
+    {
+        [self.collectionView deselectItemAtIndexPath:indexPath animated:NO];
+        [self collectionView:self.collectionView didDeselectItemAtIndexPath:indexPath];
+    }
+    else
+    {
+        
+        [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
+        [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
+    }
+}
 
 @end

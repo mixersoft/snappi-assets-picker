@@ -10,10 +10,12 @@
 //#import "MJPhotoLoadingView.h"
 //#import "UIImageView+WebCache.h"
 #import <QuartzCore/QuartzCore.h>
+#import "UIManager.h"
 
 @interface MJPhotoView ()
 {
     BOOL _doubleTap;
+    BOOL _longTap;
     UIImageView *_imageView;
     //MJPhotoLoadingView *_photoLoadingView;
 }
@@ -50,6 +52,14 @@
         UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
         doubleTap.numberOfTapsRequired = 2;
         [self addGestureRecognizer:doubleTap];
+        
+        // attach long press gesture to collectionView
+        UILongPressGestureRecognizer *lpgr
+        = [[UILongPressGestureRecognizer alloc]
+           initWithTarget:self action:@selector(handleLongPress:)];
+        lpgr.minimumPressDuration = .5; //seconds
+        lpgr.delaysTouchesBegan = YES;
+        [self addGestureRecognizer:lpgr];
 
     }
     return self;
@@ -86,6 +96,7 @@
     }
     */
     _imageView.image = [UIImage imageWithCGImage:_photo.asset.defaultRepresentation.fullResolutionImage];//_photo.image; // 占位图片
+    
     //_photo.srcImageView.image = nil;
     
     
@@ -181,8 +192,9 @@
     
     if (_photo.firstShow) { // 第一次显示的图片
         _photo.firstShow = NO; // 已经显示过了
-        _imageView.frame = [_photo.srcView convertRect:_photo.srcView.bounds toView:nil];
         
+        _imageView.frame = [_photo.srcView convertRect:_photo.srcView.bounds toView:nil];
+
         [UIView animateWithDuration:0.3 animations:^{
             _imageView.frame = imageFrame;
         } completion:^(BOOL finished) {
@@ -202,10 +214,35 @@
 
 #pragma mark - 手势处理
 - (void)handleSingleTap:(UITapGestureRecognizer *)tap {
-    //return;
     _doubleTap = NO;
-    [self performSelector:@selector(hide) withObject:nil afterDelay:0.2];
+    [self performSelector:@selector(singleTap) withObject:nil afterDelay:0.2];
 }
+
+- (void)singleTap
+{
+    if (_longTap == NO && _doubleTap == NO)
+    {
+        if ([self.photoViewDelegate respondsToSelector:@selector(photoViewSingleTap:)]) {
+            [self.photoViewDelegate photoViewSingleTap:self];
+        }
+    }
+}
+
+#pragma mark - Long Press Gesture Handler
+-(void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+        NSLog(@"UIGestureRecognizerStateEnded");
+        //Do Whatever You want on End of Gesture
+    }
+    else if (gestureRecognizer.state == UIGestureRecognizerStateBegan){
+        _doubleTap = NO;
+        _longTap = YES;
+        [self performSelector:@selector(hide) withObject:nil afterDelay:0.2];
+    }
+}
+
+
 - (void)hide
 {
     if (_doubleTap) return;
@@ -231,9 +268,9 @@
         }
         
         // 通知代理
-        if ([self.photoViewDelegate respondsToSelector:@selector(photoViewSingleTap:)]) {
-            [self.photoViewDelegate photoViewSingleTap:self];
-        }
+        //if ([self.photoViewDelegate respondsToSelector:@selector(photoViewLongTap:)]) {
+        //    [self.photoViewDelegate photoViewLongTap:self];
+        //}
     } completion:^(BOOL finished) {
         // 设置底部的小图片
         //_photo.srcImageView.image = _photo.placeholder;
@@ -267,4 +304,5 @@
     // 取消请求
     //[_imageView setImageWithURL:[NSURL URLWithString:@"file:///abc"]];
 }
+
 @end

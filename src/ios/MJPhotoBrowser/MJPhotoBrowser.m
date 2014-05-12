@@ -10,12 +10,14 @@
 //#import "SDWebImageManager+MJ.h"
 #import "MJPhotoView.h"
 #import "MJPhotoToolbar.h"
+#import "MJPhotoNavBar.h"
+#import "CTAssetsViewController.h"
 
 #define kPadding 10
 #define kPhotoViewTagOffset 1000
 #define kPhotoViewIndex(photoView) ([photoView tag] - kPhotoViewTagOffset)
 
-@interface MJPhotoBrowser () <MJPhotoViewDelegate>
+@interface MJPhotoBrowser () <MJPhotoViewDelegate, MJPhotoNavBarDelegate>
 {
     // 滚动的view
 	UIScrollView *_photoScrollView;
@@ -24,6 +26,8 @@
     NSMutableSet *_reusablePhotoViews;
     // 工具条
     MJPhotoToolbar *_toolbar;
+    
+    MJPhotoNavBar *_navbar;
     
     // 一开始的状态栏
     BOOL _statusBarHiddenInited;
@@ -52,6 +56,8 @@
     
     // 2.创建工具条
     [self createToolbar];
+    
+    [self createNavBar];
 }
 
 - (void)show:(UIViewController *)parent
@@ -94,6 +100,19 @@
     [self.view addSubview:_toolbar];
     
     [self updateTollbarState];
+}
+
+- (void)createNavBar
+{
+    CGFloat barHeight = 44;
+    CGFloat barY = self.view.frame.origin.y;
+    _navbar = [[MJPhotoNavBar alloc] init];
+    _navbar.delegate = self;
+    _navbar.frame = CGRectMake(0, barY, self.view.frame.size.width, barHeight);
+    _navbar.photos = _photos;
+    [self.view addSubview:_navbar];
+    
+    [self updateNavbarState];
 }
 
 #pragma mark 创建UIScrollView
@@ -151,11 +170,8 @@
 #pragma mark - MJPhotoView代理
 - (void)photoViewSingleTap:(MJPhotoView *)photoView
 {
-    [UIApplication sharedApplication].statusBarHidden = _statusBarHiddenInited;
-    self.view.backgroundColor = [UIColor clearColor];
-    
-    // 移除工具条
-    [_toolbar removeFromSuperview];
+    [self.assetsViewControllerDelegate tapAsset:photoView.photo.asset];
+    [self updateNavbarState];
 }
 
 - (void)photoViewDidEndZoom:(MJPhotoView *)photoView
@@ -169,9 +185,30 @@
     _toolbar.currentPhotoIndex = _currentPhotoIndex;
 }
 
-- (void)exitFullscreen
+- (void)photoViewLongTap:(MJPhotoView *)photoView
 {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [UIApplication sharedApplication].statusBarHidden = _statusBarHiddenInited;
+    self.view.backgroundColor = [UIColor clearColor];
+    
+    // 移除工具条
+    [_toolbar removeFromSuperview];
+}
+
+#pragma mark Nav Bar Delegate
+- (void)gotoThumbnail
+{
+    MJPhotoView *currView = nil;
+ 
+        for (MJPhotoView *photoView in _visiblePhotoViews) {
+            if (kPhotoViewIndex(photoView) == _currentPhotoIndex) {
+                currView = photoView;
+                break;
+            }
+        }
+    
+    if (currView)
+        [currView hide];
+    [self photoViewLongTap:nil];
 }
 
 #pragma mark 显示照片
@@ -186,10 +223,16 @@
     CGRect visibleBounds = _photoScrollView.bounds;
 	int firstIndex = (int)floorf((CGRectGetMinX(visibleBounds)+kPadding*2) / CGRectGetWidth(visibleBounds));
 	int lastIndex  = (int)floorf((CGRectGetMaxX(visibleBounds)-kPadding*2-1) / CGRectGetWidth(visibleBounds));
-    if (firstIndex < 0) firstIndex = 0;
-    if (firstIndex >= _photos.count) firstIndex = _photos.count - 1;
-    if (lastIndex < 0) lastIndex = 0;
-    if (lastIndex >= _photos.count) lastIndex = _photos.count - 1;
+    
+    if (firstIndex < 0)
+        firstIndex = 0;
+    if (firstIndex >= _photos.count)
+        firstIndex = _photos.count - 1;
+    
+    if (lastIndex < 0)
+        lastIndex = 0;
+    if (lastIndex >= _photos.count)
+        lastIndex = _photos.count - 1;
 	
 	// 回收不再显示的ImageView
     NSInteger photoViewIndex;
@@ -282,9 +325,16 @@
     _toolbar.currentPhotoIndex = _currentPhotoIndex;
 }
 
+- (void)updateNavbarState
+{
+    _currentPhotoIndex = _photoScrollView.contentOffset.x / _photoScrollView.frame.size.width;
+    _navbar.currentPhotoIndex = _currentPhotoIndex;
+}
+
 #pragma mark - UIScrollView Delegate
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
 	[self showPhotos];
     [self updateTollbarState];
+    [self updateNavbarState];
 }
 @end

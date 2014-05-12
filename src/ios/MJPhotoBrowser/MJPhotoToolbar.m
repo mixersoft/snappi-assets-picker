@@ -34,10 +34,10 @@
     
     if (_photos.count > 1) {
         _indexLabel = [[UILabel alloc] init];
-        _indexLabel.font = [UIFont boldSystemFontOfSize:20];
+        _indexLabel.font = [UIFont systemFontOfSize:20];
         _indexLabel.frame = self.bounds;
         _indexLabel.backgroundColor = [UIColor clearColor];
-        _indexLabel.textColor = [UIColor whiteColor];
+        _indexLabel.textColor = [UIColor darkGrayColor];
         _indexLabel.textAlignment = NSTextAlignmentCenter;
         _indexLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         [self addSubview:_indexLabel];
@@ -70,9 +70,10 @@
     _currentPhotoIndex = currentPhotoIndex;
     
     // 更新页码
-    _indexLabel.text = [NSString stringWithFormat:@"%d / %d", _currentPhotoIndex + 1, _photos.count];
+    //_indexLabel.text = [NSString stringWithFormat:@"%d / %d", _currentPhotoIndex + 1, _photos.count];
     
     MJPhoto *photo = _photos[_currentPhotoIndex];
+    _indexLabel.text = [NSString stringWithFormat:@"%@", [photo.asset.defaultRepresentation filename]];
 }
 
 @end

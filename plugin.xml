@@ -35,6 +35,10 @@
         <header-file src="src/ios/CAssetsPickerPlugin.h" />
         <source-file src="src/ios/CAssetsPickerPlugin.m" />
 
+	<!-- UI manager -->
+	<header-file src="src/ios/UIManager.h" />
+        <source-file src="src/ios/UIManager.m" />
+
 	<!-- CTAssetsPickerController header and source files -->
 	<header-file src="src/ios/AssetsPicker/ALAsset+isEqual.h" />
         <source-file src="src/ios/AssetsPicker/ALAsset+isEqual.m" />
@@ -72,6 +76,10 @@
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerVideo@2x.png" />
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerOverlay.png" />
 	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerOverlay@2x.png" />
+	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerUnchecked.png" />
+	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerUnchecked@2x.png" />
+	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerThumbnail.png" />
+	<resource-file src="src/ios/AssetsPicker/Resources/CTAssetsPickerThumbnail@2x.png" />
 	
 	<!-- MJPhotoBrowser source files -->
 	<header-file src="src/ios/MJPhotoBrowser/MJPhoto.h" />
@@ -82,6 +90,8 @@
         <source-file src="src/ios/MJPhotoBrowser/MJPhotoToolbar.m" />
 	<header-file src="src/ios/MJPhotoBrowser/MJPhotoView.h" />
         <source-file src="src/ios/MJPhotoBrowser/MJPhotoView.m" />
+	<header-file src="src/ios/MJPhotoBrowser/MJPhotoNavBar.h" />
+        <source-file src="src/ios/MJPhotoBrowser/MJPhotoNavBar.m" />
 
 	
 	<!-- system frameworks -->

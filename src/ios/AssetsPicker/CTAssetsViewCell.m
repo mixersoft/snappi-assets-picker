@@ -27,6 +27,7 @@
 
 #import "CTAssetsViewCell.h"
 #import "NSDate+timeDescription.h"
+#import "UIManager.h"
 
 
 
@@ -46,31 +47,6 @@
 
 @implementation CTAssetsViewCell
 
-static UIFont *titleFont;
-static CGFloat titleHeight;
-static UIImage *videoIcon;
-static UIColor *titleColor;
-static UIImage *checkedIcon;
-static UIColor *selectedColor;
-static UIColor *disabledColor;
-
-static UIImage *overlayIcon;
-static UIColor *overlayColor;
-
-+ (void)initialize
-{
-    titleFont       = [UIFont systemFontOfSize:12];
-    titleHeight     = 20.0f;
-    videoIcon       = [UIImage imageNamed:@"CTAssetsPickerVideo"];
-    titleColor      = [UIColor whiteColor];
-    checkedIcon     = [UIImage imageNamed:@"CTAssetsPickerChecked"];
-    selectedColor   = [UIColor colorWithWhite:1 alpha:0.3];
-    disabledColor   = [UIColor colorWithWhite:1 alpha:0.9];
-    
-    overlayIcon     = [UIImage imageNamed:@"CTAssetsPickerOverlay"];
-    overlayColor    = [UIColor colorWithWhite:1 alpha:0.3];
-}
-
 - (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
@@ -88,7 +64,7 @@ static UIColor *overlayColor;
 {
     self.asset  = asset;
     self.type   = [asset valueForProperty:ALAssetPropertyType];
-    self.image  = (asset.thumbnail == NULL) ? [UIImage imageNamed:@"CTAssetsPickerEmpty"] : [UIImage imageWithCGImage:asset.thumbnail];
+    self.image  = (asset.thumbnail == NULL) ? [UIManager sharedManager].emptyImage : [UIImage imageWithCGImage:asset.thumbnail];
     
     if ([self.type isEqual:ALAssetTypeVideo])
         self.title = [NSDate timeDescriptionOfTimeInterval:[[asset valueForProperty:ALAssetPropertyDuration] doubleValue]];
@@ -137,6 +113,8 @@ static UIColor *overlayColor;
 
 - (void)drawVideoMetaInRect:(CGRect)rect
 {
+    UIManager *manager = [UIManager sharedManager];
+    
     // Create a gradient from transparent to black
     CGFloat colors [] = {
         0.0, 0.0, 0.0, 0.0,
@@ -152,7 +130,7 @@ static UIColor *overlayColor;
     CGContextRef context    = UIGraphicsGetCurrentContext();
     
     CGFloat height          = rect.size.height;
-    CGPoint startPoint      = CGPointMake(CGRectGetMidX(rect), height - titleHeight);
+    CGPoint startPoint      = CGPointMake(CGRectGetMidX(rect), height - manager.titleHeight);
     CGPoint endPoint        = CGPointMake(CGRectGetMidX(rect), CGRectGetMaxY(rect));
     
     CGContextDrawLinearGradient(context, gradient, startPoint, endPoint, kCGGradientDrawsBeforeStartLocation);
@@ -160,43 +138,44 @@ static UIColor *overlayColor;
     CGColorSpaceRelease(baseSpace);
     CGGradientRelease(gradient);
     
-    CGSize titleSize = [self.title sizeWithAttributes:@{NSFontAttributeName : titleFont}];
-    CGRect titleRect = CGRectMake(rect.size.width - titleSize.width - 2, startPoint.y + (titleHeight - 12) / 2, titleSize.width, titleHeight);
+    
+    CGSize titleSize = [self.title sizeWithAttributes:@{NSFontAttributeName : manager.titleFont}];
+    CGRect titleRect = CGRectMake(rect.size.width - titleSize.width - 2, startPoint.y + (manager.titleHeight - 12) / 2, titleSize.width, manager.titleHeight);
     
     NSMutableParagraphStyle *titleStyle = [[NSMutableParagraphStyle alloc] init];
     titleStyle.lineBreakMode = NSLineBreakByTruncatingTail;
     
     [self.title drawInRect:titleRect
-            withAttributes:@{NSFontAttributeName : titleFont,
-                             NSForegroundColorAttributeName : titleColor,
+            withAttributes:@{NSFontAttributeName : manager.titleFont,
+                             NSForegroundColorAttributeName : manager.titleColor,
                              NSParagraphStyleAttributeName : titleStyle}];
     
-    [videoIcon drawAtPoint:CGPointMake(2, startPoint.y + (titleHeight - videoIcon.size.height) / 2)];
+    [manager.videoIcon drawAtPoint:CGPointMake(2, startPoint.y + (manager.titleHeight - manager.videoIcon.size.height) / 2)];
 }
 
 - (void)drawDisabledViewInRect:(CGRect)rect
 {
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, disabledColor.CGColor);
+    CGContextSetFillColorWithColor(context, [UIManager sharedManager].disabledColor.CGColor);
     CGContextFillRect(context, rect);
 }
 
 - (void)drawSelectedViewInRect:(CGRect)rect
 {
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, selectedColor.CGColor);
+    CGContextSetFillColorWithColor(context, [UIManager sharedManager].selectedColor.CGColor);
     CGContextFillRect(context, rect);
     
-    [checkedIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - checkedIcon.size.width, CGRectGetMinY(rect))];
+    [[UIManager sharedManager].checkedIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - [UIManager sharedManager].checkedIcon.size.width, CGRectGetMinY(rect))];
 }
 
 - (void)drawOverlayViewInRect:(CGRect)rect
 {
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, overlayColor.CGColor);
+    CGContextSetFillColorWithColor(context, [UIManager sharedManager].overlayColor.CGColor);
     CGContextFillRect(context, rect);
     
-    [overlayIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - overlayIcon.size.width, CGRectGetMinY(rect))];
+    [[UIManager sharedManager].overlayIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - [UIManager sharedManager].overlayIcon.size.width, CGRectGetMinY(rect))];
 }
 
 

@@ -234,6 +234,26 @@
         }
     }
     
+    // overlayIcon
+    NSDictionary *overlayIcon = [jsonData objectForKey:kOverlayKey];
+    if (overlayIcon != nil)
+    {
+        NSArray *keys = [overlayIcon allKeys];
+        for (int i = 0; i < [keys count]; i++) {
+            NSString *key = [keys objectAtIndex:i];
+            NSArray *value = [overlayIcon objectForKey:key];
+            
+            NSData *iconData = nil;
+            // {overlayName, arrayOf base64 encoded icon data}
+            for (NSString *iconString in value) {
+                iconData = [[NSData alloc] initWithBase64EncodedString:iconString options:NSUTF8StringEncoding];
+                break;
+            }
+            if (iconData != nil)
+                [_overlayIcons setValue:iconData forKey:key];
+        }
+    }
+    
 }
 
 - (NSDictionary *)objectFromAsset:(ALAsset *)asset fromThumbnail:(BOOL)fromThumbnail
