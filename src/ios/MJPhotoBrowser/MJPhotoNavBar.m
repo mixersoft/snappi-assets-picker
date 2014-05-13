@@ -32,7 +32,8 @@
     else if (photo.overlay)
         _iconView.image = [UIManager sharedManager].overlayIcon;
     else
-        _iconView.image = [UIManager sharedManager].uncheckedIcon;
+        _iconView.image = nil;
+        //_iconView.image = [UIManager sharedManager].uncheckedIcon;
 }
 
 - (void)setPhotos:(NSArray *)photos
