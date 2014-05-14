@@ -95,7 +95,8 @@
         [self photoStartLoad];
     }
     */
-    _imageView.image = [UIImage imageWithCGImage:_photo.asset.defaultRepresentation.fullResolutionImage];//_photo.image; // 占位图片
+    UIImage *img = [UIImage imageWithCGImage:_photo.asset.defaultRepresentation.fullScreenImage];
+    _imageView.image = img; // 占位图片
     
     //_photo.srcImageView.image = nil;
     

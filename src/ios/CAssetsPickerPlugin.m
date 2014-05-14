@@ -23,6 +23,7 @@
     NSString *_uuid;
     int _targetWidth;
     int _targetHeight;
+    BOOL _correctOrientation;
 }
 
 #pragma  mark - Interfaces
@@ -161,6 +162,7 @@
     _overlays = [[NSMutableDictionary alloc] init];
     _targetWidth = -1;
     _targetHeight = -1;
+    _correctOrientation = YES;
 }
 
 /**
@@ -252,6 +254,13 @@
             if (iconData != nil)
                 [_overlayIcons setValue:iconData forKey:key];
         }
+    }
+    
+    // correctOrientation
+    obj = [jsonData objectForKey:kCorrectOrientation];
+    if (obj != nil)
+    {
+        _correctOrientation = [obj boolValue];
     }
     
 }

@@ -74,12 +74,6 @@
     }
     else
     {
-        /*
-        [parent.view addSubview:self.view];
-        if (_currentPhotoIndex == 0) {
-            [self showPhotos];
-        }*/
-        
         [parent presentViewController:self animated:NO completion:nil];
         if (_currentPhotoIndex == 0) {
             [self showPhotos];
@@ -221,8 +215,8 @@
     }
     
     CGRect visibleBounds = _photoScrollView.bounds;
-	int firstIndex = (int)floorf((CGRectGetMinX(visibleBounds)+kPadding*2) / CGRectGetWidth(visibleBounds));
-	int lastIndex  = (int)floorf((CGRectGetMaxX(visibleBounds)-kPadding*2-1) / CGRectGetWidth(visibleBounds));
+	int firstIndex = (int)floorf((CGRectGetMinX(visibleBounds)+kPadding*2) / CGRectGetWidth(visibleBounds)) - 1;
+	int lastIndex  = (int)floorf((CGRectGetMaxX(visibleBounds)-kPadding*2-1) / CGRectGetWidth(visibleBounds)) + 1;
     
     if (firstIndex < 0)
         firstIndex = 0;
@@ -235,6 +229,7 @@
         lastIndex = _photos.count - 1;
 	
 	// 回收不再显示的ImageView
+    
     NSInteger photoViewIndex;
 	for (MJPhotoView *photoView in _visiblePhotoViews) {
         photoViewIndex = kPhotoViewIndex(photoView);
@@ -254,6 +249,7 @@
 			[self showPhotoViewAtIndex:index];
 		}
 	}
+    
 }
 
 #pragma mark 显示一个图片view

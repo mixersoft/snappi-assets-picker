@@ -8,7 +8,6 @@
 
 #import "MJPhotoToolbar.h"
 #import "MJPhoto.h"
-//#import "MBProgressHUD+Add.h"
 
 @interface MJPhotoToolbar()
 {
@@ -41,27 +40,6 @@
         _indexLabel.textAlignment = NSTextAlignmentCenter;
         _indexLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         [self addSubview:_indexLabel];
-    }
-}
-
-- (void)saveImage
-{
-    /*
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        MJPhoto *photo = _photos[_currentPhotoIndex];
-        UIImageWriteToSavedPhotosAlbum(photo.image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-    });
-     */
-}
-
-- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
-{
-    if (error) {
-        //[MBProgressHUD showSuccess:@"保存失败" toView:nil];
-    } else {
-        MJPhoto *photo = _photos[_currentPhotoIndex];
-        photo.save = YES;
-        //[MBProgressHUD showSuccess:@"成功保存到相册" toView:nil];
     }
 }
 

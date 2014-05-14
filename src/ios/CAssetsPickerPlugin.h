@@ -30,6 +30,7 @@ typedef enum {
 #define kPixelXDimensionKey      @"PixelXDimension"
 #define kPixelYDimensionKey     @"PixelYDimension"
 #define kOrientationKey         @"Orientation"
+#define kCorrectOrientation     @"correctOrientation"
 
 #define DATETIME_FORMAT @"yyyy-MM-dd HH:mm:ss"
 
