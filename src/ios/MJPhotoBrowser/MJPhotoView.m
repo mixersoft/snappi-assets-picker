@@ -242,6 +242,11 @@
     }
 }
 
+- (void)hideView
+{
+    _doubleTap = NO;
+    [self hide];
+}
 
 - (void)hide
 {

@@ -24,6 +24,6 @@
 // 代理
 @property (nonatomic, weak) id<MJPhotoViewDelegate> photoViewDelegate;
 
-- (void)hide;
+- (void)hideView;
 
 @end

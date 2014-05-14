@@ -340,6 +340,11 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         cell.overlay = YES;
         photo.overlay = YES;
     }
+    else
+    {
+        cell.overlay = NO;
+        photo.overlay = NO;
+    }
     
     // XXX
     // Setting `selected` property blocks further deselection.
@@ -350,6 +355,12 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         [collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
         
         photo.selected = YES;
+    }
+    else
+    {
+        cell.selected = NO;
+        [collectionView deselectItemAtIndexPath:indexPath animated:NO];
+        photo.selected = NO;
     }
     
     [cell bind:asset];

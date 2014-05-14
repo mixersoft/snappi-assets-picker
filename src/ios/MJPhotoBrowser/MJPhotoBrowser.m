@@ -207,7 +207,7 @@
         }
     
     if (currView)
-        [currView hide];
+        [currView hideView];
     [self photoViewLongTap:nil];
 }
 
