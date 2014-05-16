@@ -334,7 +334,7 @@
     if (fromThumbnail)
         image = [UIImage imageWithCGImage:asset.thumbnail];
     else
-        image = [UIImage imageWithCGImage:asset.defaultRepresentation.fullResolutionImage];
+        image = [UIImage imageWithCGImage:asset.defaultRepresentation.fullResolutionImage scale:1.0 orientation:asset.defaultRepresentation.orientation];
     
     if (_targetWidth <= 0 && _targetHeight <= 0)
     {
