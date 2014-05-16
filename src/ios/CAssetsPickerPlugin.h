@@ -54,6 +54,7 @@ typedef enum {
 
 - (void)getPicture:(CDVInvokedUrlCommand *)command;
 - (void)getById:(CDVInvokedUrlCommand *)command;
+- (void)setOverlay:(CDVInvokedUrlCommand *)command;
 
 
 + (NSString *)date2str:(NSDate *)convertDate withFormat:(NSString *)formatString;

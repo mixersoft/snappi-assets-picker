@@ -178,6 +178,51 @@ function getAPictureWithId(uuid, orig_ext)
 }
 ```
 
+### setOverlay
+Set overlay icon.<br>
+
+```javascript
+window.plugin.snappi.assetspicker.setOverlay(overlayName, iconBase64Encoded);
+```
+##### overlayName
+The corresponding name of overlay. Now it has to be set as `Camera.Overlay.PREVIOUS_SELECTED`.
+
+##### iconBase64Encoded
+Base64 encoded icon image data.
+You can get base64 encoded icon image data from <img> tag as following;
+```javascript
+function getBase64Image(img)
+        {
+            // Create an empty canvas element
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            // Copy the image contents to the canvas
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            
+            // Get the data-URL formatted image
+            // Firefox supports PNG and JPEG. You could check img.src to
+            // guess the original format, but be aware the using "image/jpg"
+            // will re-encode the image.
+            var dataURL = canvas.toDataURL("image/png");
+            
+            return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+        }
+```
+
+
+#### Example
+```javascript
+function onSetOverlay()
+{
+    var overlayIcon = getBase64Image(document.getElementById("overlay"));
+    window.plugin.snappi.assetspicker.setOverlay(Camera.Overlay.PREVIOUS_SELECTED, overlayIcon);
+}
+```
+
+
 
 ### onSuccess
 onSuccess callback function that provides the selected images.
@@ -386,8 +431,10 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         <div class="app">
             <h1>Apache Cordova</h1>
             <div id="deviceready" class="blink">
+                <img id="overlay" src="img/overlay.png"></img>
                 <p class="event listening">Connecting to Device</p>
                 <p class="event received">Device is Ready</p>
+                
             </div>
         </div>
         <div style="position:absolute;left:0%;top:0%">
@@ -417,6 +464,13 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             // called when "pick" button is clicked
             function onPick()
             {
+                // set overlay icon
+                if (document.getElementById("overlay"))
+                {
+                    var overlayIcon = getBase64Image(document.getElementById("overlay"));
+                    window.plugin.snappi.assetspicker.setOverlay(Camera.Overlay.PREVIOUS_SELECTED, overlayIcon);
+                }
+                
                 var assetsUuidExt = new Array();
                 if (selectedAssets != null && selectedAssets.length != 0)
                 {
@@ -428,6 +482,8 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
                 var overlayObj = {};
                 
                 overlayObj[Camera.Overlay.PREVIOUS_SELECTED] = assetsUuidExt;
+                
+                
                 
                 var options = {
                     quality: 75,
@@ -458,6 +514,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         // success callback
         function onSuccess(dataArray)
         {
+           
             selectedAssets = dataArray;
             var strTr = "";
             for (i = 0; i < selectedAssets.length; i++)
@@ -489,11 +546,11 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
                         window.plugin.snappi.assetspicker.getById(obj.uuid, obj.orig_ext, onGetById, onCancel, options);
                     }
                     else
-                        image.src = obj.data;
-
+                    image.src = obj.data;
+                    
                 }
                 else
-                    image.src = "data:image/jpeg;base64," + obj.data;
+                image.src = "data:image/jpeg;base64," + obj.data;
             }
         }
         
@@ -509,6 +566,27 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             var image = document.getElementById(data.id);
             image.src = "data:image/jpeg;base64," + data.data;
         }
+        
+        function getBase64Image(img)
+        {
+            // Create an empty canvas element
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            // Copy the image contents to the canvas
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            
+            // Get the data-URL formatted image
+            // Firefox supports PNG and JPEG. You could check img.src to
+            // guess the original format, but be aware the using "image/jpg"
+            // will re-encode the image.
+            var dataURL = canvas.toDataURL("image/png");
+            
+            return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+        }
+        
         </script>
     </body>
 </html>

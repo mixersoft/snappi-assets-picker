@@ -30,6 +30,11 @@ cordova.define("cordova/plugin/AssetsPickerPlugin", function(require, exports, m
                exec(orig_ext, success, "CAssetsPickerPlugin", "getById", [uuid, "JPG", failure]);
                };
                
+               AssetsPickerPlugin.prototype.setOverlay = function(overlayName, iconData)
+               {
+               exec(function(){}, function(){}, "CAssetsPickerPlugin", "setOverlay", [overlayName, iconData]);
+               }
+               
                var myplugin = new AssetsPickerPlugin();
                
                module.exports = myplugin;

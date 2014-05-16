@@ -8,6 +8,7 @@
 
 #import "CAssetsPickerPlugin.h"
 #import "URLParser.h"
+#import "UIManager.h"
 
 #define EXT_JPG     @"JPG"
 #define EXT_PNG     @"PNG"
@@ -149,6 +150,65 @@
     }];
 }
 
+- (void)setOverlay:(CDVInvokedUrlCommand *)command
+{
+    self.hasPendingOperation = YES;
+    
+    self.latestCommand = command;
+    
+    BOOL bRet = NO;
+    NSString *msg = @"";
+    if ([command.arguments count] >= 2)
+    {
+        // get overlay name
+        NSString *overlayName = [command.arguments objectAtIndex:0];
+        if (overlayName != nil)
+        {
+            // get overlay icon
+            NSString *iconString = [command.arguments objectAtIndex:1];
+            NSData *iconData = nil;
+            // {overlayName, arrayOf base64 encoded icon data}
+            
+            iconData = [[NSData alloc] initWithBase64EncodedString:iconString options:0];
+            [UIManager sharedManager].overlayIcon = [UIImage imageWithData:iconData scale:[UIScreen mainScreen].scale];
+            bRet = YES;
+            
+            if (iconData != nil)
+                [_overlayIcons setValue:iconData forKey:overlayName];
+        }
+        else
+        {
+            bRet = NO;
+            msg = @"Incorrect parameters!";
+        }
+    }
+    else
+    {
+        bRet = NO;
+        msg = @"not enough parameters";
+    }
+    
+    // Unset the self.hasPendingOperation property
+    self.hasPendingOperation = NO;
+    
+    CDVPluginResult *pluginResult = nil;
+    NSString *resultJS = nil;
+    
+    if (!bRet)
+    {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:msg];
+        resultJS = [pluginResult toErrorCallbackString:command.callbackId];
+    }
+    else
+    {
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        resultJS = [pluginResult toSuccessCallbackString:command.callbackId];
+    }
+    
+    [self writeJavascript:resultJS];
+    
+}
 
 #pragma mark - Utility Functions
 
@@ -233,26 +293,6 @@
             }
             
             [_overlays setValue:arrayUrl forKey:key];
-        }
-    }
-    
-    // overlayIcon
-    NSDictionary *overlayIcon = [jsonData objectForKey:kOverlayKey];
-    if (overlayIcon != nil)
-    {
-        NSArray *keys = [overlayIcon allKeys];
-        for (int i = 0; i < [keys count]; i++) {
-            NSString *key = [keys objectAtIndex:i];
-            NSArray *value = [overlayIcon objectForKey:key];
-            
-            NSData *iconData = nil;
-            // {overlayName, arrayOf base64 encoded icon data}
-            for (NSString *iconString in value) {
-                iconData = [[NSData alloc] initWithBase64EncodedString:iconString options:NSUTF8StringEncoding];
-                break;
-            }
-            if (iconData != nil)
-                [_overlayIcons setValue:iconData forKey:key];
         }
     }
     
