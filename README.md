@@ -192,24 +192,24 @@ Base64 encoded icon image data.
 You can get base64 encoded icon image data from <img> tag as following;
 ```javascript
 function getBase64Image(img)
-        {
-            // Create an empty canvas element
-            var canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
+{
+     // Create an empty canvas element
+     var canvas = document.createElement("canvas");
+     canvas.width = img.width;
+     canvas.height = img.height;
             
-            // Copy the image contents to the canvas
-            var ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
+     // Copy the image contents to the canvas
+     var ctx = canvas.getContext("2d");
+     ctx.drawImage(img, 0, 0);
             
-            // Get the data-URL formatted image
-            // Firefox supports PNG and JPEG. You could check img.src to
-            // guess the original format, but be aware the using "image/jpg"
-            // will re-encode the image.
-            var dataURL = canvas.toDataURL("image/png");
-            
-            return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-        }
+     // Get the data-URL formatted image
+     // Firefox supports PNG and JPEG. You could check img.src to
+     // guess the original format, but be aware the using "image/jpg"
+     // will re-encode the image.
+     var dataURL = canvas.toDataURL("image/png");
+         
+     return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
 ```
 
 
@@ -218,7 +218,7 @@ function getBase64Image(img)
 function onSetOverlay()
 {
     var overlayIcon = getBase64Image(document.getElementById("overlay"));
-    window.plugin.snappi.assetspicker.setOverlay(Camera.Overlay.PREVIOUS_SELECTED, overlayIcon);
+    window.plugin.snappi.assetspicker.setOverlay(Camera.Overlay.PREVIOUS_SELECTED, overlayIcon, function(){}, function(msg){alert("failure in setOverlay:" + msg);});
 }
 ```
 
@@ -468,7 +468,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
                 if (document.getElementById("overlay"))
                 {
                     var overlayIcon = getBase64Image(document.getElementById("overlay"));
-                    window.plugin.snappi.assetspicker.setOverlay(Camera.Overlay.PREVIOUS_SELECTED, overlayIcon);
+                    window.plugin.snappi.assetspicker.setOverlay(Camera.Overlay.PREVIOUS_SELECTED, overlayIcon, function(){}, function(msg){alert("failure in setOverlay:" + msg);});
                 }
                 
                 var assetsUuidExt = new Array();

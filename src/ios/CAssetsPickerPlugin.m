@@ -170,11 +170,22 @@
             // {overlayName, arrayOf base64 encoded icon data}
             
             iconData = [[NSData alloc] initWithBase64EncodedString:iconString options:0];
-            [UIManager sharedManager].overlayIcon = [UIImage imageWithData:iconData scale:[UIScreen mainScreen].scale];
-            bRet = YES;
+            UIImage *img = [UIImage imageWithData:iconData scale:[UIScreen mainScreen].scale];
             
-            if (iconData != nil)
-                [_overlayIcons setValue:iconData forKey:overlayName];
+            if (img == nil)
+            {
+                bRet = NO;
+                msg = @"Incorrect image data, cannot get image from data";
+            }
+            else
+            {
+                [UIManager sharedManager].overlayIcon = img;
+            
+                bRet = YES;
+            
+                if (iconData != nil)
+                    [_overlayIcons setValue:iconData forKey:overlayName];
+            }
         }
         else
         {
