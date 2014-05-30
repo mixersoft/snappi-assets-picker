@@ -28,6 +28,7 @@
 #import "CTAssetsPickerConstants.h"
 #import "CTAssetsPickerController.h"
 #import "CTAssetsGroupViewController.h"
+#import "CTAssetsViewController.h"
 
 
 
@@ -35,9 +36,14 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 
 
 
-@interface CTAssetsPickerController ()
+@interface CTAssetsPickerController () {
+    
+}
 
+@property (nonatomic, strong) UIBarButtonItem *titleButton;
 @property (nonatomic, strong) ALAssetsLibrary *assetsLibrary;
+
+- (void)setActionForTitleButton:(BOOL)bSet;
 
 @end
 
@@ -391,19 +397,22 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 
 - (UIBarButtonItem *)titleButtonItem
 {
-    UIBarButtonItem *title =
+    if (_titleButton != nil)
+        return _titleButton;
+    
+    _titleButton =
     [[UIBarButtonItem alloc] initWithTitle:self.toolbarTitle
                                      style:UIBarButtonItemStylePlain
-                                    target:nil
-                                    action:nil];
+                                    target:self
+                                    action:@selector(showSelected:)];
     
     NSDictionary *attributes = @{NSForegroundColorAttributeName : [UIColor blackColor]};
     
-    [title setTitleTextAttributes:attributes forState:UIControlStateNormal];
-    [title setTitleTextAttributes:attributes forState:UIControlStateDisabled];
-    [title setEnabled:NO];
+    [_titleButton setTitleTextAttributes:attributes forState:UIControlStateNormal];
+    [_titleButton setTitleTextAttributes:attributes forState:UIControlStateDisabled];
+    [_titleButton setEnabled:YES];
     
-    return title;
+    return _titleButton;
 }
 
 - (UIBarButtonItem *)spaceButtonItem
@@ -419,6 +428,28 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
     return @[space, title, space];
 }
 
+
+- (void)showSelected:(id)sender
+{
+    CTAssetsViewController *vc = [[CTAssetsViewController alloc] init];
+    vc.assetsGroup = nil;
+    
+    [self pushViewController:vc animated:YES];
+}
+
+- (void)setActionForTitleButton:(BOOL)bSet
+{
+    if (bSet == NO)
+    {
+        _titleButton.action = nil;
+        _titleButton.target = nil;
+    }
+    else
+    {
+        _titleButton.action = @selector(showSelected:);
+        _titleButton.target = self;
+    }
+}
 
 #pragma mark - Actions
 

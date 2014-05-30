@@ -43,7 +43,11 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 @interface CTAssetsPickerController ()
 
+@property (nonatomic, strong) UIBarButtonItem *titleButton;
+@property (nonatomic, strong) ALAssetsLibrary *assetsLibrary;
+
 - (void)finishPickingAssets:(id)sender;
+- (void)setActionForTitleButton:(BOOL)bSet;
 
 - (NSString *)toolbarTitle;
 - (UIView *)noAssetsView;
@@ -109,6 +113,15 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     [self setupAssets];
 }
 
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    if (self.assetsGroup == nil)
+    {
+        [self.picker setActionForTitleButton:YES];
+    }
+}
+
 - (void)dealloc
 {
     [self removeNotificationObserver];
@@ -157,12 +170,22 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 - (void)setupAssets
 {
-    self.title = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyName];
+    if (self.assetsGroup == nil)
+    {
+        self.title = [NSString stringWithFormat:@"Selected Photos"];
+        
+        [self.picker setActionForTitleButton:NO];
+    }
+    else
+    {
+        self.title = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyName];
+    }
     
     if (!self.assets)
         self.assets = [[NSMutableArray alloc] init];
     else
         [self.assets removeAllObjects];
+        
     
     ALAssetsGroupEnumerationResultsBlock resultsBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
     {
@@ -172,7 +195,36 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
             [self reloadData];
     };
     
-    [self.assetsGroup enumerateAssetsUsingBlock:resultsBlock];
+    if (self.assetsGroup)
+        [self.assetsGroup enumerateAssetsUsingBlock:resultsBlock];
+    else
+    {
+        ALAssetsGroupEnumerationResultsBlock selectResultBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
+        {
+            if (asset)
+            {
+                if( [self.picker.selectedAssets containsObject:asset] )
+                    [self.assets addObject:asset];
+            }
+            else
+                [self reloadData];
+        };
+        
+        NSMutableArray *assetGroups = [[NSMutableArray alloc] init];
+        
+        void (^ assetGroupEnumerator) ( ALAssetsGroup *, BOOL *)= ^(ALAssetsGroup *group, BOOL *stop) {
+            if(group != nil) {
+                [group enumerateAssetsUsingBlock:selectResultBlock];
+                [assetGroups addObject:group];
+            }
+        };
+        
+        assetGroups = [[NSMutableArray alloc] init];
+        
+        [self.picker.assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
+                               usingBlock:assetGroupEnumerator
+                             failureBlock:^(NSError *error) {NSLog(@"There is an error");}];
+    }
 }
 
 
