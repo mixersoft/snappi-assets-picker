@@ -567,6 +567,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         // success callback
         function onSuccess(dataArray)
         {
+	    // get previous albums
             if (document.getElementById("normal").checked)
             {
                 getPreviousAlbums();
@@ -615,6 +616,11 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         // cancel callback
         function onCancel(message)
         {
+	    // get previous albums
+            if (document.getElementById("normal").checked)
+            {
+                getPreviousAlbums();
+            }
             //alert(message);
         }
         
@@ -665,13 +671,6 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         function onGetPreviousAlbumsSuccess(result)
         {
             previousAlbums = result;
-            //alert("succes!");
-            /*
-            for (i = 0; i < result.length; i++)
-            {
-                var obj = result[i];
-                var
-            }*/
         }
         
         function onDateBookmarkClicked()
