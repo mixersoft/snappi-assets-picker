@@ -223,6 +223,46 @@ function onSetOverlay()
 ```
 
 
+### getPreviousAlbums
+Get previous focused albums & assets. 
+```javascript
+window.plugin.snappi.assetspicker.getPreviousAlbums(success, failure);
+```
+
+This function returns dictionary object that contains items formatted as following;
+```javascript
+item : { albumID: assetID} 
+```
+If user set this dictionary object to [options.bookmarks][options], then the plugin show previous focused asset when open the corresponding album.
+
+#### albumID
+unique identifier of album
+
+#### assetID
+unique identifier of focused asset.
+
+#### success
+The corresponding function is called when getting is success.
+
+#### Example
+```javascript
+function getPreviousAlbums()
+{
+   // get previous albums
+    window.plugin.snappi.assetspicker.getPreviousAlbums(onGetPreviousAlbumsSuccess, onGetPreviousAlbumsFailure);
+}
+
+function onGetPreviousAlbumsFailure(msg)
+{
+    alert(msg);
+}
+        
+function onGetPreviousAlbumsSuccess(result)
+{
+    previousAlbums = result;
+}
+```
+
 
 ### onSuccess
 onSuccess callback function that provides the selected images.
@@ -324,6 +364,7 @@ Optional parameters to customize the settings.
   saveToPhotoAlbum: false,
   scrollToDate: new Date(),
   overlay: {overlayName: array of "uuid.ext"}
+  bookmarks: {albumID1:assetID1, albumID2:assetID2, …} // or {date:[array of dates]}
   };
 ```
 
@@ -365,6 +406,7 @@ Camera.MediaType = {
 - saveToPhotoAlbum: Save the image to the photo album on the device after capture. (Boolean)
 - scrollToDate: Scroll to indicated date when open photo chooser dialog.
 - overlay: Array of "uuid.ext" of images to be with overlay. Show overlay icons on these images when open photo chooser dialog. IDs could be returned [onSuccess][onsuccess] callback. 
+- bookmarks: Dictionary object of key-value ```{albumID:assetID}``` or ```{date:[array of dates]}``` to bookmark specified asset on the corresponding album or to bookmark specified dates
 - popoverOptions: iOS only options to specify popover location in iPad. Defined in CameraPopoverOptions.
 
 #### CameraPopoverOptions
@@ -441,15 +483,21 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             <table id="imagetable">
             </table>
         </div>
-        <div style="position:absolute;left:20%;top:50%">
-            <input type="button" value="Pick" onclick="onPick()" style="width:100px;height=80px"/>
-            <input type="button" value="Clear" onclick="onClear()" style="width:100px;height=80px"/>
+        <div style="position:absolute;left:20%;top:20%">
+            <input type="button" value="Pick" onclick="onPick()" style="width:100px;height:30px"/>
+            <input type="button" value="Clear" onclick="onClear()" style="width:100px;height:30px"/>
+        </div>
+        <div style="position:absolute;left:20%;top:30%">
+            <input type="radio" value="0" id="normal" name="type" onclick="onNormalBookmarkClicked()" checked/>
+                <label for="normal" value="Normal Bookmarks" >Normal Bookmarks </label> <br>
+            <input type="radio" value="1" id="date" name="type" onclick="onDateBookmarkClicked()"/>
+                <label for="date" value="Date Bookmarks">Date Bookmarks </label>
         </div>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/index.js"></script>
         <script type="text/javascript">
             app.initialize();
-        </script>
+            </script>
         <script type="text/javascript">
             var selectedAssets = new Array();
             var isFileUri = true; // get uri or data
@@ -461,9 +509,12 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             var isUseGetById = false; // call getById to get picture data or access directly
             var isResizeOnGetById = false;
             
+            var previousAlbums = {};
+            
             // called when "pick" button is clicked
             function onPick()
             {
+               
                 // set overlay icon
                 if (document.getElementById("overlay"))
                 {
@@ -492,14 +543,16 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
                     overlay: overlayObj
                 };
                 if (isFileUri == true)
-                    options.destinationType = Camera.DestinationType.FILE_URI;
+                options.destinationType = Camera.DestinationType.FILE_URI;
                 else
-                    options.destinationType = Camera.DestinationType.DATA_URL;
+                options.destinationType = Camera.DestinationType.DATA_URL;
                 if (isResize == true)
                 {
                     options.targetWidth = targetWidth;
                     options.targetHeight = targetHeight;
                 }
+                
+                options.bookmarks = previousAlbums;
                 
                 window.plugin.snappi.assetspicker.getPicture(onSuccess, onCancel, options);
             }
@@ -514,7 +567,12 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         // success callback
         function onSuccess(dataArray)
         {
-           
+            if (document.getElementById("normal").checked)
+            {
+                getPreviousAlbums();
+            }
+            
+            
             selectedAssets = dataArray;
             var strTr = "";
             for (i = 0; i < selectedAssets.length; i++)
@@ -587,7 +645,42 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
         }
         
-        </script>
+        function onNormalBookmarkClicked()
+        {
+            // get previous albums
+            getPreviousAlbums();
+        }
+        
+        function getPreviousAlbums()
+        {
+            // get previous albums
+            window.plugin.snappi.assetspicker.getPreviousAlbums(onGetPreviousAlbumsSuccess, onGetPreviousAlbumsFailure);
+        }
+        
+        function onGetPreviousAlbumsFailure(msg)
+        {
+            alert(msg);
+        }
+        
+        function onGetPreviousAlbumsSuccess(result)
+        {
+            previousAlbums = result;
+            //alert("succes!");
+            /*
+            for (i = 0; i < result.length; i++)
+            {
+                var obj = result[i];
+                var
+            }*/
+        }
+        
+        function onDateBookmarkClicked()
+        {
+            previousAlbums = { "date" : ["2014-04-04", "2014-06-03", "2014-06-04", "2014-06-05"]};
+        }
+        
+            </script>
+
     </body>
 </html>
 ```

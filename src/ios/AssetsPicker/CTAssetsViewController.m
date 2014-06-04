@@ -34,14 +34,15 @@
 #import "MJPhotoBrowser.h"
 #import "MJPhoto.h"
 
+#import "FloatingTrayView.h"
+
 
 
 NSString * const CTAssetsViewCellIdentifier = @"CTAssetsViewCellIdentifier";
 NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryViewIdentifier";
 
 
-
-@interface CTAssetsPickerController ()
+@interface CTAssetsPickerController()
 
 @property (nonatomic, strong) UIBarButtonItem *titleButton;
 @property (nonatomic, strong) ALAssetsLibrary *assetsLibrary;
@@ -56,23 +57,28 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 
 
-@interface CTAssetsViewController ()
+@interface CTAssetsViewController () <FloatingTrayDelegate>
 
 @property (nonatomic, weak) CTAssetsPickerController *picker;
 @property (nonatomic, strong) NSMutableArray *assets;
 @property (nonatomic, strong) NSMutableArray *photos;
+@property (nonatomic, strong) ALAsset *previousAsset;
+
+@property (nonatomic, strong) FloatingTrayView* floatingTrayView;
 
 @end
+
 
 @implementation CTAssetsViewController
 
 
-- (id)init
+- (id)initWithType:(CTAssetsViewType)type
 {
     UICollectionViewFlowLayout *layout = [self collectionViewFlowLayoutOfOrientation:self.interfaceOrientation];
     
     if (self = [super initWithCollectionViewLayout:layout])
     {
+        self.viewType = type;
         self.collectionView.allowsMultipleSelection = YES;
         
         [self.collectionView registerClass:CTAssetsViewCell.class
@@ -83,6 +89,8 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
                        withReuseIdentifier:CTAssetsSupplementaryViewIdentifier];
         
         self.preferredContentSize = kPopoverContentSize;
+        
+        self.previousAsset = nil;
     }
     
     [self addNotificationObserver];
@@ -103,6 +111,29 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     lpgr.delaysTouchesBegan = YES;
     lpgr.delegate = self;
     [self.collectionView addGestureRecognizer:lpgr];
+    
+    
+    switch (self.viewType) {
+        case CTAssetsViewTypeNormal:
+            //
+            break;
+            
+        case CTAssetsViewTypeFiltered:
+            break;
+            
+        case CTAssetsViewTypeBookmarks:
+            self.floatingTrayView = [[FloatingTrayView alloc] initWithFrame:CGRectZero];
+            self.floatingTrayView.delegate = self;
+            [self.view addSubview:self.floatingTrayView];
+            
+            [self.floatingTrayView installConstraints];
+            self.floatingTrayView.hidden = NO;
+            break;
+            
+        default:
+            break;
+    }
+
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -116,10 +147,47 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    if (self.assetsGroup == nil)
-    {
-        [self.picker setActionForTitleButton:YES];
+    
+    self.previousAsset = nil;
+    
+    
+    switch (self.viewType) {
+        case CTAssetsViewTypeNormal:
+        {
+            // set previous album/asset
+            
+            NSURL *url = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyURL];
+            NSString *strUrl = [NSString stringWithFormat:@"%@", [url absoluteString]];
+            
+            
+            // set previous assets as (upper left corner item)
+            NSIndexPath *indexPath = [self indexPathForUpperLeftItem];
+            if (indexPath)
+            {
+                int index = indexPath.row;
+                CTAssetsViewCell *cell = (CTAssetsViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+                
+                ALAsset *asset = cell.asset;
+                url = [asset valueForProperty:ALAssetPropertyAssetURL];
+                NSString *strAssetsUrl = [NSString stringWithFormat:@"%@", [url absoluteString]];
+                
+                [self.picker.previousAssets setObject:strAssetsUrl forKey:strUrl];
+            }
+            else
+                [self.picker.previousAssets removeObjectForKey:strUrl];
+        }
+            break;
+            
+        case CTAssetsViewTypeFiltered:
+            [self.picker setActionForTitleButton:YES];
+            break;
+            
+        case CTAssetsViewTypeBookmarks:
+            break;
+        default:
+            break;
     }
+
 }
 
 - (void)dealloc
@@ -154,6 +222,28 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 - (void)setupButtons
 {
+    switch (self.viewType) {
+        case CTAssetsViewTypeNormal:
+        case CTAssetsViewTypeFiltered:
+            //
+            break;
+            
+        case CTAssetsViewTypeBookmarks:
+            if (self.picker.showsCancelButton)
+            {
+                self.navigationItem.leftBarButtonItem =
+                [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Cancel", nil)
+                                                 style:UIBarButtonItemStylePlain
+                                                target:self.picker
+                                                action:@selector(dismiss:)];
+            }
+            break;
+            
+        default:
+            break;
+    }
+    
+    
     self.navigationItem.rightBarButtonItem =
     [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil)
                                      style:UIBarButtonItemStyleDone
@@ -170,16 +260,24 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 - (void)setupAssets
 {
-    if (self.assetsGroup == nil)
-    {
-        self.title = [NSString stringWithFormat:@"Selected Photos"];
-        
-        [self.picker setActionForTitleButton:NO];
+    
+    switch (self.viewType) {
+        case CTAssetsViewTypeNormal:
+            self.title = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyName];
+            break;
+            
+        case CTAssetsViewTypeFiltered:
+            self.title = [NSString stringWithFormat:@"Selected Photos"];
+            [self.picker setActionForTitleButton:NO];
+            
+        case CTAssetsViewTypeBookmarks:
+            self.title = [NSString stringWithFormat:@"All Photos"];
+            break;
+            
+        default:
+            break;
     }
-    else
-    {
-        self.title = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyName];
-    }
+
     
     if (!self.assets)
         self.assets = [[NSMutableArray alloc] init];
@@ -187,44 +285,94 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         [self.assets removeAllObjects];
         
     
+    // add whole photos
     ALAssetsGroupEnumerationResultsBlock resultsBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
     {
-        if (asset)
+        if (asset && ![self.assets containsObject:asset])
+        {
             [self.assets addObject:asset];
+            
+            if (self.previousAsset == nil)
+            {
+                NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+                NSString *strUrl = [NSString stringWithFormat:@"%@", [url absoluteString]];
+                
+                NSURL *groupUrl = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyURL];
+                NSString *strGroupUrl = [NSString stringWithFormat:@"%@", [groupUrl absoluteString]];
+                
+                NSString *previousUrl = [self.picker.previousAssets objectForKey:strGroupUrl];
+                if (previousUrl != nil && [previousUrl isEqualToString:strUrl])
+                    self.previousAsset = asset;
+            }
+        }
         else
             [self reloadData];
     };
     
-    if (self.assetsGroup)
-        [self.assetsGroup enumerateAssetsUsingBlock:resultsBlock];
-    else
+    // add selected photos
+    ALAssetsGroupEnumerationResultsBlock selectResultBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
     {
-        ALAssetsGroupEnumerationResultsBlock selectResultBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
+        if (asset)
         {
-            if (asset)
+            if( [self.picker.selectedAssets containsObject:asset] )
             {
-                if( [self.picker.selectedAssets containsObject:asset] )
+                if (![self.assets containsObject:asset])
                     [self.assets addObject:asset];
             }
-            else
-                [self reloadData];
-        };
-        
-        NSMutableArray *assetGroups = [[NSMutableArray alloc] init];
-        
-        void (^ assetGroupEnumerator) ( ALAssetsGroup *, BOOL *)= ^(ALAssetsGroup *group, BOOL *stop) {
-            if(group != nil) {
-                [group enumerateAssetsUsingBlock:selectResultBlock];
-                [assetGroups addObject:group];
-            }
-        };
-        
-        assetGroups = [[NSMutableArray alloc] init];
-        
-        [self.picker.assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
-                               usingBlock:assetGroupEnumerator
-                             failureBlock:^(NSError *error) {NSLog(@"There is an error");}];
+        }
+        //else
+            //[self reloadData];
+    };
+    
+    switch (self.viewType) {
+        case CTAssetsViewTypeNormal:
+            [self.assetsGroup enumerateAssetsUsingBlock:resultsBlock];
+            break;
+            
+        case CTAssetsViewTypeFiltered:
+        {
+            NSMutableArray *assetGroups = [[NSMutableArray alloc] init];
+            
+            void (^ assetGroupEnumerator) ( ALAssetsGroup *, BOOL *)= ^(ALAssetsGroup *group, BOOL *stop) {
+                if(group != nil) {
+                    [group enumerateAssetsUsingBlock:selectResultBlock];
+                    [assetGroups addObject:group];
+                }
+                else
+                    [self reloadData];
+            };
+            
+            assetGroups = [[NSMutableArray alloc] init];
+            
+            [self.picker.assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
+                                                     usingBlock:assetGroupEnumerator
+                                                   failureBlock:^(NSError *error) {NSLog(@"There is an error");}];
+        }
+            break;
+            
+        case CTAssetsViewTypeBookmarks:
+        {
+            NSMutableArray *assetGroups = [[NSMutableArray alloc] init];
+            
+            void (^ assetGroupEnumerator) ( ALAssetsGroup *, BOOL *)= ^(ALAssetsGroup *group, BOOL *stop) {
+                if(group != nil) {
+                    [group enumerateAssetsUsingBlock:resultsBlock];
+                    [assetGroups addObject:group];
+                }
+            };
+            
+            assetGroups = [[NSMutableArray alloc] init];
+            
+            [self.picker.assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
+                                                     usingBlock:assetGroupEnumerator
+                                                   failureBlock:^(NSError *error) {NSLog(@"There is an error");}];
+        }
+            break;
+            
+        default:
+            break;
     }
+
 }
 
 
@@ -325,10 +473,35 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 {
     if (self.assets.count > 0)
     {
+        if (self.viewType == CTAssetsViewTypeBookmarks)
+        {
+            NSArray *sortedArray = [self.assets sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
+            {
+                ALAsset *assetA = (ALAsset *)a;
+                ALAsset *other = (ALAsset *)b;
+                NSComparisonResult ret = [[assetA valueForProperty:ALAssetPropertyDate] compare:[other valueForProperty:ALAssetPropertyDate]];
+                return ret;
+            }];
+            
+            self.assets = [[NSMutableArray alloc] initWithArray:sortedArray];
+        }
+        
         [self.collectionView reloadData];
         
-        if (CGPointEqualToPoint(self.collectionView.contentOffset, CGPointZero))
-            [self.collectionView setContentOffset:CGPointMake(0, self.collectionViewLayout.collectionViewContentSize.height)];
+        
+        
+        if (self.previousAsset != nil && self.viewType == CTAssetsViewTypeNormal)
+        {
+            NSUInteger index = [self.assets indexOfObject:self.previousAsset];
+            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+            [self scrollToIndexPath:indexPath animated:NO];
+        }
+        else
+        {
+            if (CGPointEqualToPoint(self.collectionView.contentOffset, CGPointZero))
+                [self.collectionView setContentOffset:CGPointMake(0, self.collectionViewLayout.collectionViewContentSize.height)];
+        }
+        
         
         self.photos = [NSMutableArray arrayWithCapacity:self.assets.count];
         // 1.create photo datas
@@ -350,6 +523,98 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     }
 }
 
+- (CGPoint)pointForIndexPath:(NSIndexPath *)indexPath
+{
+    
+    CGPoint pt = CGPointZero;
+    
+    UICollectionViewLayoutAttributes *attributes = [self.collectionView layoutAttributesForItemAtIndexPath:indexPath];
+    if (attributes)
+    {
+        CGRect rt = attributes.frame;
+        pt = CGPointMake(0, rt.origin.y);
+        
+        UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionViewLayout;
+        //pt.x += layout.sectionInset.left;
+        
+        // top edge
+        pt.y -= layout.sectionInset.top;
+        
+        // status bar height
+        pt.y -= [UIApplication sharedApplication].statusBarFrame.size.height;
+        
+        // navigation bar height
+        if (self.navigationController.navigationBar.translucent == YES)
+        {
+            pt.y -= self.navigationController.navigationBar.frame.size.height;
+        }
+        
+        return pt;
+        
+        
+    }
+    return pt;
+}
+
+- (void)scrollToIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated
+{
+    //[self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
+    
+    CGPoint cur = [self.collectionView contentOffset];
+    
+    if (indexPath == nil)
+        return;
+    
+    UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionViewLayout;
+    
+    CGPoint pt = [self pointForIndexPath:indexPath];
+    
+    CGPoint bottomOffset = CGPointMake(0, self.collectionView.contentSize.height - self.collectionView.bounds.size.height);
+    if (pt.y > bottomOffset.y)
+        [self.collectionView setContentOffset:bottomOffset animated:animated];
+    else
+        [self.collectionView setContentOffset:CGPointMake(0, pt.y) animated:animated];
+}
+
+- (CGPoint)pointForUpperLeftItem
+{
+    CGPoint pt = self.collectionView.contentOffset;
+    
+    UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionViewLayout;
+    pt.x += layout.sectionInset.left;
+    
+    // top edge
+    pt.y += layout.sectionInset.top;
+    
+    // status bar height
+    pt.y += [UIApplication sharedApplication].statusBarFrame.size.height;
+    
+    // navigation bar height
+    if (self.navigationController.navigationBar.translucent == YES)
+    {
+        pt.y += self.navigationController.navigationBar.frame.size.height;
+    }
+
+    return pt;
+}
+
+- (NSIndexPath *)indexPathForUpperLeftItem
+{
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[self pointForUpperLeftItem]];
+    return indexPath;
+}
+
+- (NSComparisonResult)compareDatesWithDate:(NSDate *)a b:(NSDate *)b
+{
+    NSUInteger dateFlags = NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit;
+    NSCalendar *gregorianCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSDateComponents *selfComponents = [gregorianCalendar components:dateFlags fromDate:a];
+    NSDate *selfDateOnly = [gregorianCalendar dateFromComponents:selfComponents];
+    
+    NSDateComponents *otherCompents = [gregorianCalendar components:dateFlags fromDate:b];
+    NSDate *otherDateOnly = [gregorianCalendar dateFromComponents:otherCompents];
+    return [selfDateOnly compare:otherDateOnly];
+}
 
 #pragma mark - No assets
 
@@ -561,10 +826,145 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     }
     else
     {
-        
         [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
         [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
     }
+}
+
+#pragma mark -Floating tray delegate
+- (void)floatingTrayNext
+{
+    NSIndexPath *indexPath = [self indexPathForUpperLeftItem];
+    if (indexPath == nil)
+        return;
+    
+    // get date of upper-left corner item.
+    CTAssetsViewCell *cell = (CTAssetsViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+    ALAsset *asset = cell.asset;
+    CGFloat topY = [self pointForIndexPath:indexPath].y;
+    NSIndexPath *nextIndexPath = indexPath;
+    while (YES) {
+        nextIndexPath = [NSIndexPath indexPathForItem:nextIndexPath.row + 1 inSection:0];
+        if (nextIndexPath.row >= [self.assets count])
+            break;
+        
+        cell = (CTAssetsViewCell *)[self.collectionView cellForItemAtIndexPath:nextIndexPath];
+        asset = cell.asset;
+        
+        if (topY < [self pointForIndexPath:nextIndexPath].y)
+            break;
+    }
+    NSUInteger index = [self.assets indexOfObject:asset];
+    NSDate *assetDate = [asset valueForProperty:ALAssetPropertyDate];
+    
+    if ([self.picker.previousDates count] <= 0)
+        return;
+    
+    NSDate *nextDate = nil;
+    for (NSDate *date in self.picker.previousDates) {
+        if ([self compareDatesWithDate:assetDate b:date] == NSOrderedAscending)
+        {
+            nextDate = [[NSDate alloc] initWithTimeIntervalSince1970:[date timeIntervalSince1970]];
+            break;
+        }
+    }
+    
+    if (nextDate == nil)
+        return;
+    
+    for (NSUInteger i = index; i < [self.assets count]; i++)
+    {
+        asset = [self.assets objectAtIndex:i];
+        assetDate = [asset valueForProperty:ALAssetPropertyDate];
+        
+        NSIndexPath *newIndexPath = [NSIndexPath indexPathForItem:i inSection:0];
+        
+        if (([self compareDatesWithDate:nextDate b:assetDate] == NSOrderedSame ||
+             [self compareDatesWithDate:nextDate b:assetDate] == NSOrderedAscending) && [self pointForIndexPath:indexPath].y < [self pointForIndexPath:newIndexPath].y)
+        {
+            [self scrollToIndexPath:newIndexPath animated:YES];
+            break;
+        }
+    }
+    
+}
+
+- (void)floatingTrayPrev
+{
+    NSIndexPath *indexPath = [self indexPathForUpperLeftItem];
+    if (indexPath == nil)
+        return;
+    
+    // get date of upper-left corner item.
+    CTAssetsViewCell *cell = (CTAssetsViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+    ALAsset *asset = cell.asset;
+    NSUInteger index = [self.assets indexOfObject:asset];
+    NSDate *assetDate = [asset valueForProperty:ALAssetPropertyDate];
+    
+    if ([self.picker.previousDates count] <= 0)
+        return;
+    
+    NSDate *prevDate = nil;
+    for (int i = [self.picker.previousDates count] - 1; i >= 0; i--) {
+        NSDate *date = [self.picker.previousDates objectAtIndex:i];
+        if ([self compareDatesWithDate:assetDate b:date] == NSOrderedDescending ||
+            [self compareDatesWithDate:assetDate b:date] == NSOrderedSame)
+        {
+            prevDate = date;
+            break;
+        }
+    }
+    
+    if (prevDate == nil)
+    {
+        NSIndexPath *newIndexPath = [NSIndexPath indexPathForItem:0 inSection:0];
+        [self scrollToIndexPath:newIndexPath animated:YES];
+        return;
+    }
+    
+    BOOL isScrolled = NO;
+    
+    for (int i = index; i >= 0; i--)
+    {
+        asset = [self.assets objectAtIndex:i];
+        assetDate = [asset valueForProperty:ALAssetPropertyDate];
+        
+        NSIndexPath *newIndexPath = [NSIndexPath indexPathForItem:i inSection:0];
+        CGFloat y = [self pointForIndexPath:indexPath].y;
+        CGFloat newY = [self pointForIndexPath:newIndexPath].y;
+        
+        if (([self compareDatesWithDate:prevDate b:assetDate] == NSOrderedSame ||
+             [self compareDatesWithDate:prevDate b:assetDate] == NSOrderedDescending) && y > newY)
+        {
+            ALAsset *prevAsset = asset;
+            int prevI = i;
+            while (YES) {
+                
+                asset = prevAsset;
+                i = prevI;
+                
+                prevI--;
+                if (prevI < 0)
+                    break;
+                
+                prevAsset = [self.assets objectAtIndex:prevI];
+                NSDate *prevDate = [prevAsset valueForProperty:ALAssetPropertyDate];
+                if ([self compareDatesWithDate:assetDate b:prevDate] == NSOrderedSame)
+                {
+                    //
+                }
+                else
+                    break;
+            }
+            newIndexPath = [NSIndexPath indexPathForItem:i inSection:0];
+            isScrolled = YES;
+            [self scrollToIndexPath:newIndexPath animated:YES];
+            break;
+        }
+    }
+    
+    if (isScrolled == NO)
+        [self scrollToIndexPath:[NSIndexPath indexPathForItem:0 inSection:0] animated:YES];
 }
 
 @end

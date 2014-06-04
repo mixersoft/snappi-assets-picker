@@ -28,6 +28,12 @@
 #import <UIKit/UIKit.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
+typedef enum {
+    CTAssetsViewTypeNormal = 0,
+    CTAssetsViewTypeFiltered = 1,
+    CTAssetsViewTypeBookmarks = 2
+}CTAssetsViewType;
+
 @protocol CTAssetsViewControllerDelegate <NSObject>
 
 - (void) tapAsset:(ALAsset *)asset;
@@ -36,6 +42,9 @@
 
 @interface CTAssetsViewController : UICollectionViewController<UIGestureRecognizerDelegate, CTAssetsViewControllerDelegate>
 
+@property (nonatomic) CTAssetsViewType  viewType;
 @property (nonatomic, strong) ALAssetsGroup *assetsGroup;
+
+- (id)initWithType:(CTAssetsViewType)type;
 
 @end

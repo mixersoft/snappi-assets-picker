@@ -387,7 +387,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    CTAssetsViewController *vc = [[CTAssetsViewController alloc] init];
+    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeNormal];
     vc.assetsGroup = [self.groups objectAtIndex:indexPath.row];
     
     [self.picker pushViewController:vc animated:YES];

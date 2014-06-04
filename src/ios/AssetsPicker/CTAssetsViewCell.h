@@ -34,6 +34,7 @@
 
 @property (nonatomic, assign, getter = isEnabled) BOOL enabled;
 @property (nonatomic, assign, getter = isOverlay) BOOL overlay;
+@property (nonatomic, strong) ALAsset *asset;
 
 - (void)bind:(ALAsset *)asset;
 

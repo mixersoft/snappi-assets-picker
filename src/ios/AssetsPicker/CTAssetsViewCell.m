@@ -33,7 +33,7 @@
 
 @interface CTAssetsViewCell ()
 
-@property (nonatomic, strong) ALAsset *asset;
+
 @property (nonatomic, strong) UIImage *image;
 @property (nonatomic, copy) NSString *type;
 @property (nonatomic, copy) NSString *title;

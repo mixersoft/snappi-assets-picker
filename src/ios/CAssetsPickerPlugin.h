@@ -31,6 +31,8 @@ typedef enum {
 #define kPixelYDimensionKey     @"PixelYDimension"
 #define kOrientationKey         @"Orientation"
 #define kCorrectOrientation     @"correctOrientation"
+#define kBookmarks              @"bookmarks"
+#define kBookmarksDate          @"date"
 
 #define DATETIME_FORMAT @"yyyy-MM-dd HH:mm:ss"
 
@@ -55,6 +57,7 @@ typedef enum {
 - (void)getPicture:(CDVInvokedUrlCommand *)command;
 - (void)getById:(CDVInvokedUrlCommand *)command;
 - (void)setOverlay:(CDVInvokedUrlCommand *)command;
+- (void)getPreviousAlbums:(CDVInvokedUrlCommand *)command;
 
 
 + (NSString *)date2str:(NSDate *)convertDate withFormat:(NSString *)formatString;

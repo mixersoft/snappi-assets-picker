@@ -69,6 +69,27 @@
  */
 @property (nonatomic, assign) BOOL showsCancelButton;
 
+/**
+ * Scroll to previous assets
+ * array of {albumid : assetsid} ,
+ *      album id is value of ALAssetsGroupPropertyURL of alassetsgroup,
+ *      assets id is value of ALAssetPropertyAssetURL of alasset
+ */
+@property (nonatomic, strong) NSMutableDictionary *previousAssets;
+
+/**
+ * scroll to specified dates
+ * array of NSDate
+ */
+@property (nonatomic, strong) NSMutableArray *previousDates;
+
+@property (nonatomic) BOOL isDateBookmark;
+
+
+/**
+ * instant methods
+ */
+- (id)init:(BOOL)isDateBookmark;
 
 /**
  *  @name Managing Selections

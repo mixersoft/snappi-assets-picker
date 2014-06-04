@@ -25,6 +25,9 @@
     int _targetWidth;
     int _targetHeight;
     BOOL _correctOrientation;
+    NSMutableDictionary *_hightlightAssets;
+    NSMutableArray *_highlightDates;
+    BOOL _isDateBookmark;
 }
 
 #pragma  mark - Interfaces
@@ -37,17 +40,21 @@
 	// Save the CDVInvokedUrlCommand as a property.  We will need it later.
 	self.latestCommand = command;
     
-    self.picker = [[CTAssetsPickerController alloc] init];
-    self.picker.assetsFilter         = [ALAssetsFilter allAssets];
-    self.picker.showsCancelButton    = (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad);
-    self.picker.delegate             = self;
-    
     [self initOptions];
     if ([command.arguments count]> 0)
     {
         NSDictionary *jsonData = [command.arguments objectAtIndex:0];
         [self getOptions:jsonData];
     }
+    
+    self.picker = [[CTAssetsPickerController alloc] init:_isDateBookmark];
+    self.picker.assetsFilter         = [ALAssetsFilter allAssets];
+    self.picker.showsCancelButton    = (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad);
+    self.picker.delegate             = self;
+    
+    // previous assets/dates
+    self.picker.previousAssets = [[NSMutableDictionary alloc] initWithDictionary: _hightlightAssets];
+    self.picker.previousDates = [[NSMutableArray alloc] initWithArray:_highlightDates];
     
     // set selected assets
     NSArray *selectedAssetObjs = [_overlays objectForKey:kPreviousSelectedName];
@@ -180,9 +187,9 @@
             else
             {
                 [UIManager sharedManager].overlayIcon = img;
-            
+                
                 bRet = YES;
-            
+                
                 if (iconData != nil)
                     [_overlayIcons setValue:iconData forKey:overlayName];
             }
@@ -221,6 +228,26 @@
     
 }
 
+
+- (void)getPreviousAlbums:(CDVInvokedUrlCommand *)command
+{
+    self.hasPendingOperation = YES;
+    
+    self.latestCommand = command;
+   
+    // Unset the self.hasPendingOperation property
+    self.hasPendingOperation = NO;
+    
+    CDVPluginResult *pluginResult = nil;
+    NSString *resultJS = nil;
+    
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:self.picker.previousAssets];
+    resultJS = [pluginResult toSuccessCallbackString:command.callbackId];
+    
+    [self writeJavascript:resultJS];
+    
+}
+
 #pragma mark - Utility Functions
 
 - (void)initOptions
@@ -234,6 +261,9 @@
     _targetWidth = -1;
     _targetHeight = -1;
     _correctOrientation = YES;
+    _hightlightAssets = [[NSMutableDictionary alloc] init];
+    _highlightDates = [[NSMutableArray alloc] init];
+    _isDateBookmark = NO;
 }
 
 /**
@@ -314,6 +344,54 @@
         _correctOrientation = [obj boolValue];
     }
     
+    // bookmarks
+    obj = [jsonData objectForKey:kBookmarks];
+    if (obj != nil && ![obj isEqual:[NSNull alloc]])
+    {
+        NSDictionary *dic = (NSDictionary *)obj;
+        NSArray *allKeys = [dic allKeys];
+        for (NSString *key in allKeys) {
+            if ([key isEqualToString:kBookmarksDate])
+            {
+                _isDateBookmark = YES;
+                if (_hightlightAssets != nil)
+                    [_hightlightAssets removeAllObjects];
+                else
+                    _hightlightAssets = [[NSMutableDictionary alloc] init];
+                
+                NSArray *arrayDates = [dic objectForKey:kBookmarksDate];
+                if (arrayDates != nil && [arrayDates count] > 0)
+                {
+                    _highlightDates = [[NSMutableArray alloc] init];
+                    for (NSString *strDate in arrayDates) {
+                        NSDate *date = [CAssetsPickerPlugin str2date:strDate withFormat:@"yyyy-MM-dd"];
+                        if (date)
+                            [_highlightDates addObject:date];
+                    }
+                }
+                else
+                {
+                    
+                }
+                break;
+            }
+        }
+        
+        if (!_isDateBookmark)
+        {
+            _hightlightAssets = [[NSMutableDictionary alloc] initWithDictionary:dic];
+        }
+    }
+    else
+    {
+        if (_hightlightAssets != nil)
+            [_hightlightAssets removeAllObjects];
+        else
+            _hightlightAssets = [[NSMutableDictionary alloc] init];
+        _highlightDates = [[NSMutableArray alloc] init];
+        
+        _isDateBookmark = NO;
+    }
 }
 
 - (NSDictionary *)objectFromAsset:(ALAsset *)asset fromThumbnail:(BOOL)fromThumbnail
@@ -633,5 +711,13 @@
     NSString *urlString = [NSString stringWithFormat:@"assets-library://asset/asset.%@?id=%@?ext=%@", ext, uuid, ext];
     return urlString;
 }
+
++ (NSDate *)str2date:(NSString *)dateString withFormat:(NSString *)formatString
+{
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:formatString];
+    return [dateFormatter dateFromString:dateString];
+}
+
 
 @end

@@ -93,7 +93,41 @@
 	<header-file src="src/ios/MJPhotoBrowser/MJPhotoNavBar.h" />
         <source-file src="src/ios/MJPhotoBrowser/MJPhotoNavBar.m" />
 
-	
+	<!-- Masonry header and source files -->
+	<header-file src="src/ios/Masonry/MASCompositeConstraint.h" />
+        <source-file src="src/ios/Masonry/MASCompositeConstraint.m" />
+	<header-file src="src/ios/Masonry/MASConstraint.h" />
+        <source-file src="src/ios/Masonry/MASConstraint.m" />
+	<header-file src="src/ios/Masonry/MASConstraintMaker.h" />
+        <source-file src="src/ios/Masonry/MASConstraintMaker.m" />
+	<header-file src="src/ios/Masonry/MASLayoutConstraint.h" />
+        <source-file src="src/ios/Masonry/MASLayoutConstraint.m" />
+	<header-file src="src/ios/Masonry/Masonry.h" />
+	<header-file src="src/ios/Masonry/MASUtilities.h" />
+	<header-file src="src/ios/Masonry/MASViewAttribute.h" />
+        <source-file src="src/ios/Masonry/MASViewAttribute.m" />
+	<header-file src="src/ios/Masonry/MASViewConstraint.h" />
+        <source-file src="src/ios/Masonry/MASViewConstraint.m" />
+	<header-file src="src/ios/Masonry/NSArray+MASAdditions.h" />
+        <source-file src="src/ios/Masonry/NSArray+MASAdditions.m" />
+	<header-file src="src/ios/Masonry/NSArray+MASShorthandAdditions.h" />
+	<header-file src="src/ios/Masonry/NSLayoutConstraint+MASDebugAdditions.h" />
+        <source-file src="src/ios/Masonry/NSLayoutConstraint+MASDebugAdditions.m" />
+	<header-file src="src/ios/Masonry/View+MASAdditions.h" />
+	<source-file src="src/ios/Masonry/View+MASAdditions.m" />	
+	<header-file src="src/ios/Masonry/View+MASShorthandAdditions.h" />
+
+	<!-- FloatingTrayView header and source files -->
+	<header-file src="src/ios/FloatingTrayView/FloatingTrayView.h" />
+        <source-file src="src/ios/FloatingTrayView/FloatingTrayView.m" />
+	<header-file src="src/ios/FloatingTrayView/UIButton+Extensions.h" />
+        <source-file src="src/ios/FloatingTrayView/UIButton+Extensions.m" />
+
+	<!-- CTAssetsPickerController resource files -->
+	<resource-file src="src/ios/FloatingTrayView/Resources/down-arrow-white@2x.png" />
+	<resource-file src="src/ios/FloatingTrayView/Resources/left-arrow-white@2x.png" />
+	<resource-file src="src/ios/FloatingTrayView/Resources/up-arrow-white@2x.png" />
+        	
 	<!-- system frameworks -->
 	<framework src="AssetsLibrary.framework" weak="true" />
     </platform>

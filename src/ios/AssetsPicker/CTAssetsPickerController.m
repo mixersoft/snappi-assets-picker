@@ -29,6 +29,7 @@
 #import "CTAssetsPickerController.h"
 #import "CTAssetsGroupViewController.h"
 #import "CTAssetsViewController.h"
+#import "CTAssetsViewController.h"
 
 
 
@@ -43,6 +44,7 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 @property (nonatomic, strong) UIBarButtonItem *titleButton;
 @property (nonatomic, strong) ALAssetsLibrary *assetsLibrary;
 
+
 - (void)setActionForTitleButton:(BOOL)bSet;
 
 @end
@@ -53,12 +55,27 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 
 @implementation CTAssetsPickerController
 
-- (id)init
+- (id)init:(BOOL)isDateBookmark
 {
-    CTAssetsGroupViewController *groupViewController = [[CTAssetsGroupViewController alloc] init];
+
     
-    if (self = [super initWithRootViewController:groupViewController])
+    
+    
+    if (isDateBookmark)
     {
+        CTAssetsViewController *viewController = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeBookmarks];
+        
+        self = [super initWithRootViewController:viewController];
+    }
+    else
+    {
+        CTAssetsGroupViewController *groupViewController = [[CTAssetsGroupViewController alloc] init];
+        self = [super initWithRootViewController:groupViewController];
+    }
+    
+    if (self)
+    {
+        _isDateBookmark     = isDateBookmark;
         _assetsLibrary      = [self.class defaultAssetsLibrary];
         _assetsFilter       = [ALAssetsFilter allAssets];
         _selectedAssets     = [[NSMutableArray alloc] init];
@@ -429,14 +446,6 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 }
 
 
-- (void)showSelected:(id)sender
-{
-    CTAssetsViewController *vc = [[CTAssetsViewController alloc] init];
-    vc.assetsGroup = nil;
-    
-    [self pushViewController:vc animated:YES];
-}
-
 - (void)setActionForTitleButton:(BOOL)bSet
 {
     if (bSet == NO)
@@ -466,6 +475,13 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 {
     if ([self.delegate respondsToSelector:@selector(assetsPickerController:didFinishPickingAssets:)])
         [self.delegate assetsPickerController:self didFinishPickingAssets:self.selectedAssets];
+}
+
+- (void)showSelected:(id)sender
+{
+    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeFiltered];
+    
+    [self pushViewController:vc animated:YES];
 }
 
 
