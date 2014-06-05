@@ -123,10 +123,19 @@
 	<header-file src="src/ios/FloatingTrayView/UIButton+Extensions.h" />
         <source-file src="src/ios/FloatingTrayView/UIButton+Extensions.m" />
 
-	<!-- CTAssetsPickerController resource files -->
+	<!-- FloatingTrayView resource files -->
 	<resource-file src="src/ios/FloatingTrayView/Resources/down-arrow-white@2x.png" />
 	<resource-file src="src/ios/FloatingTrayView/Resources/left-arrow-white@2x.png" />
 	<resource-file src="src/ios/FloatingTrayView/Resources/up-arrow-white@2x.png" />
+
+	<!-- ImageLibrary header and source files -->
+	<header-file src="src/ios/ImageLibrary/UIImage+Alpha.h" />
+        <source-file src="src/ios/ImageLibrary/UIImage+Alpha.m" />
+	<header-file src="src/ios/ImageLibrary/UIImage+Resize.h" />
+        <source-file src="src/ios/ImageLibrary/UIImage+Resize.m" />
+	<header-file src="src/ios/ImageLibrary/UIImage+RoundedCorner.h" />
+        <source-file src="src/ios/ImageLibrary/UIImage+RoundedCorner.m" />
+
         	
 	<!-- system frameworks -->
 	<framework src="AssetsLibrary.framework" weak="true" />
