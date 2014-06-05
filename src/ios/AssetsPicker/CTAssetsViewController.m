@@ -62,7 +62,6 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 @property (nonatomic, weak) CTAssetsPickerController *picker;
 @property (nonatomic, strong) NSMutableArray *assets;
 @property (nonatomic, strong) NSMutableArray *photos;
-@property (nonatomic, strong) ALAsset *previousAsset;
 
 @property (nonatomic, strong) FloatingTrayView* floatingTrayView;
 
@@ -89,8 +88,7 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
                        withReuseIdentifier:CTAssetsSupplementaryViewIdentifier];
         
         self.preferredContentSize = kPopoverContentSize;
-        
-        self.previousAsset = nil;
+
     }
     
     [self addNotificationObserver];
@@ -148,8 +146,7 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 {
     [super viewWillDisappear:animated];
     
-    self.previousAsset = nil;
-    
+  
     
     switch (self.viewType) {
         case CTAssetsViewTypeNormal:
@@ -291,19 +288,6 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         if (asset && ![self.assets containsObject:asset])
         {
             [self.assets addObject:asset];
-            
-            if (self.previousAsset == nil)
-            {
-                NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
-                NSString *strUrl = [NSString stringWithFormat:@"%@", [url absoluteString]];
-                
-                NSURL *groupUrl = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyURL];
-                NSString *strGroupUrl = [NSString stringWithFormat:@"%@", [groupUrl absoluteString]];
-                
-                NSString *previousUrl = [self.picker.previousAssets objectForKey:strGroupUrl];
-                if (previousUrl != nil && [previousUrl isEqualToString:strUrl])
-                    self.previousAsset = asset;
-            }
         }
         else
             [self reloadData];
@@ -320,8 +304,6 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
                     [self.assets addObject:asset];
             }
         }
-        //else
-            //[self reloadData];
     };
     
     switch (self.viewType) {
@@ -490,11 +472,30 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         
         
         
-        if (self.previousAsset != nil && self.viewType == CTAssetsViewTypeNormal)
+        if (self.viewType == CTAssetsViewTypeNormal)
         {
-            NSUInteger index = [self.assets indexOfObject:self.previousAsset];
-            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
-            [self scrollToIndexPath:indexPath animated:NO];
+
+            NSURL *groupUrl = [self.assetsGroup valueForProperty:ALAssetsGroupPropertyURL];
+            NSString *strGroupUrl = [NSString stringWithFormat:@"%@", [groupUrl absoluteString]];
+            
+            NSString *previousUrl = [self.picker.previousAssets objectForKey:strGroupUrl];
+            if (previousUrl != nil || ![previousUrl isEqualToString:@""])
+            {
+                [self.picker.assetsLibrary assetForURL:[NSURL URLWithString:previousUrl] resultBlock:^(ALAsset *asset) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSUInteger index = [self.assets indexOfObject:asset];
+                        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+                        [self scrollToIndexPath:indexPath animated:NO];
+                    });
+                } failureBlock:^(NSError *error) {
+                }];
+            }
+            else
+            {
+                if (CGPointEqualToPoint(self.collectionView.contentOffset, CGPointZero))
+                    [self.collectionView setContentOffset:CGPointMake(0, self.collectionViewLayout.collectionViewContentSize.height)];
+            }
+
         }
         else
         {
