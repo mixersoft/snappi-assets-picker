@@ -62,6 +62,8 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 @property (nonatomic, weak) CTAssetsPickerController *picker;
 @property (nonatomic, strong) NSMutableArray *assets;
 @property (nonatomic, strong) NSMutableArray *photos;
+@property (nonatomic, strong) NSMutableDictionary *assetsDictionary;
+@property (nonatomic, strong) NSMutableArray *assetGroups;
 
 @property (nonatomic, strong) FloatingTrayView* floatingTrayView;
 
@@ -280,18 +282,51 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         self.assets = [[NSMutableArray alloc] init];
     else
         [self.assets removeAllObjects];
-        
     
-    // add whole photos
-    ALAssetsGroupEnumerationResultsBlock resultsBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
+
+    self.assetsDictionary = [[NSMutableDictionary alloc] init];
+    self.assetGroups = [[NSMutableArray alloc] init];
+    
+    // add album photos
+    ALAssetsGroupEnumerationResultsBlock albumBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
     {
-        if (asset && ![self.assets containsObject:asset])
+        
+        if (asset)
         {
             [self.assets addObject:asset];
         }
         else
+        {
             [self reloadData];
+        }
     };
+    
+    // add whole photos
+    ALAssetsGroupEnumerationResultsBlock wholeBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
+    {
+        if (asset)
+        {
+            NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+            NSString *strUrl = [NSString stringWithFormat:@"%@", url.absoluteString];
+            [self.assetsDictionary setObject:asset forKey:strUrl];
+        }
+    };
+    
+    ALAssetsGroupEnumerationResultsBlock wholeLastBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
+    {
+        if (asset)
+        {
+            NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+            NSString *strUrl = [NSString stringWithFormat:@"%@", url.absoluteString];
+            [self.assetsDictionary setObject:asset forKey:strUrl];
+        }
+        else
+        {
+            [self getSortedAssets];
+            [self reloadData];
+        }
+    };
+    
     
     // add selected photos
     ALAssetsGroupEnumerationResultsBlock selectResultBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
@@ -300,31 +335,56 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         {
             if( [self.picker.selectedAssets containsObject:asset] )
             {
-                if (![self.assets containsObject:asset])
-                    [self.assets addObject:asset];
+                NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+                NSString *strUrl = [NSString stringWithFormat:@"%@", url.absoluteString];
+                [self.assetsDictionary setObject:asset forKey:strUrl];
             }
+        }
+    };
+    
+    ALAssetsGroupEnumerationResultsBlock selectedResultLastBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
+    {
+        if (asset)
+        {
+            if( [self.picker.selectedAssets containsObject:asset] )
+            {
+                NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+                NSString *strUrl = [NSString stringWithFormat:@"%@", url.absoluteString];
+                [self.assetsDictionary setObject:asset forKey:strUrl];
+            }
+        }
+        else
+        {
+            [self getSortedAssets];
+            [self reloadData];
         }
     };
     
     switch (self.viewType) {
         case CTAssetsViewTypeNormal:
-            [self.assetsGroup enumerateAssetsUsingBlock:resultsBlock];
+            [self.assetsGroup enumerateAssetsUsingBlock:albumBlock];
             break;
             
         case CTAssetsViewTypeFiltered:
         {
-            NSMutableArray *assetGroups = [[NSMutableArray alloc] init];
-            
             void (^ assetGroupEnumerator) ( ALAssetsGroup *, BOOL *)= ^(ALAssetsGroup *group, BOOL *stop) {
                 if(group != nil) {
-                    [group enumerateAssetsUsingBlock:selectResultBlock];
-                    [assetGroups addObject:group];
+                    [self.assetGroups addObject:group];
                 }
                 else
-                    [self reloadData];
+                {
+                    for (int i = 0; i < self.assetGroups.count - 1; i++) {
+                        ALAssetsGroup *group = [self.assetGroups objectAtIndex:i];
+                        [group enumerateAssetsUsingBlock:selectResultBlock];
+                    }
+                    
+                    if (self.assetGroups.count >= 1)
+                    {
+                        ALAssetsGroup *group = [self.assetGroups objectAtIndex:self.assetGroups.count - 1];
+                        [group enumerateAssetsUsingBlock:selectedResultLastBlock];
+                    }
+                }
             };
-            
-            assetGroups = [[NSMutableArray alloc] init];
             
             [self.picker.assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
                                                      usingBlock:assetGroupEnumerator
@@ -334,16 +394,24 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
             
         case CTAssetsViewTypeBookmarks:
         {
-            NSMutableArray *assetGroups = [[NSMutableArray alloc] init];
-            
             void (^ assetGroupEnumerator) ( ALAssetsGroup *, BOOL *)= ^(ALAssetsGroup *group, BOOL *stop) {
                 if(group != nil) {
-                    [group enumerateAssetsUsingBlock:resultsBlock];
-                    [assetGroups addObject:group];
+                    [self.assetGroups addObject:group];
+                }
+                else
+                {
+                    for (int i = 0; i < self.assetGroups.count - 1; i++) {
+                        ALAssetsGroup *group = [self.assetGroups objectAtIndex:i];
+                        [group enumerateAssetsUsingBlock:wholeBlock];
+                    }
+                    
+                    if (self.assetGroups.count >= 1)
+                    {
+                        ALAssetsGroup *group = [self.assetGroups objectAtIndex:self.assetGroups.count - 1];
+                        [group enumerateAssetsUsingBlock:wholeLastBlock];
+                    }
                 }
             };
-            
-            assetGroups = [[NSMutableArray alloc] init];
             
             [self.picker.assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
                                                      usingBlock:assetGroupEnumerator
@@ -355,6 +423,24 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
             break;
     }
 
+}
+
+- (void)getSortedAssets
+{
+    // sort objeccts
+    NSArray *sortedArray = [[self.assetsDictionary allValues] sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
+                            {
+                                ALAsset *assetA = (ALAsset *)a;
+                                ALAsset *other = (ALAsset *)b;
+                                NSComparisonResult ret = [[assetA valueForProperty:ALAssetPropertyDate] compare:[other valueForProperty:ALAssetPropertyDate]];
+                                return ret;
+                            }];
+    self.assets = [[NSMutableArray alloc] initWithArray:sortedArray];
+}
+
+- (void)getNonsortedArray
+{
+    self.assets = [[NSMutableArray alloc] initWithArray:[self.assetsDictionary allValues]];
 }
 
 
@@ -873,23 +959,34 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         }
     }
     
-    if (nextDate == nil)
-        return;
+    BOOL isScrolled = NO;
     
-    for (NSUInteger i = index; i < [self.assets count]; i++)
+    if (nextDate != nil)
     {
-        asset = [self.assets objectAtIndex:i];
-        assetDate = [asset valueForProperty:ALAssetPropertyDate];
-        
-        NSIndexPath *newIndexPath = [NSIndexPath indexPathForItem:i inSection:0];
-        
-        if (([self compareDatesWithDate:nextDate b:assetDate] == NSOrderedSame ||
-             [self compareDatesWithDate:nextDate b:assetDate] == NSOrderedAscending) && [self pointForIndexPath:indexPath].y < [self pointForIndexPath:newIndexPath].y)
+        for (NSUInteger i = index; i < [self.assets count]; i++)
         {
-            [self scrollToIndexPath:newIndexPath animated:YES];
-            break;
+            asset = [self.assets objectAtIndex:i];
+            assetDate = [asset valueForProperty:ALAssetPropertyDate];
+            
+            NSIndexPath *newIndexPath = [NSIndexPath indexPathForItem:i inSection:0];
+            
+            if (([self compareDatesWithDate:nextDate b:assetDate] == NSOrderedSame ||
+                 [self compareDatesWithDate:nextDate b:assetDate] == NSOrderedAscending) && [self pointForIndexPath:indexPath].y < [self pointForIndexPath:newIndexPath].y)
+            {
+                [self scrollToIndexPath:newIndexPath animated:YES];
+                isScrolled = YES;
+                break;
+            }
         }
     }
+    
+    if (!isScrolled)
+    {
+        CGPoint bottomOffset = CGPointMake(0, self.collectionView.contentSize.height - self.collectionView.bounds.size.height);
+        
+        [self.collectionView setContentOffset:bottomOffset animated:YES];
+    }
+    
     
 }
 
