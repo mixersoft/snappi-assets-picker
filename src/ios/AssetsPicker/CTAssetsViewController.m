@@ -327,38 +327,7 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         }
     };
     
-    
-    // add selected photos
-    ALAssetsGroupEnumerationResultsBlock selectResultBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
-    {
-        if (asset)
-        {
-            if( [self.picker.selectedAssets containsObject:asset] )
-            {
-                NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
-                NSString *strUrl = [NSString stringWithFormat:@"%@", url.absoluteString];
-                [self.assetsDictionary setObject:asset forKey:strUrl];
-            }
-        }
-    };
-    
-    ALAssetsGroupEnumerationResultsBlock selectedResultLastBlock = ^(ALAsset *asset, NSUInteger index, BOOL *stop)
-    {
-        if (asset)
-        {
-            if( [self.picker.selectedAssets containsObject:asset] )
-            {
-                NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
-                NSString *strUrl = [NSString stringWithFormat:@"%@", url.absoluteString];
-                [self.assetsDictionary setObject:asset forKey:strUrl];
-            }
-        }
-        else
-        {
-            [self getSortedAssets];
-            [self reloadData];
-        }
-    };
+
     
     switch (self.viewType) {
         case CTAssetsViewTypeNormal:
@@ -367,28 +336,16 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
             
         case CTAssetsViewTypeFiltered:
         {
-            void (^ assetGroupEnumerator) ( ALAssetsGroup *, BOOL *)= ^(ALAssetsGroup *group, BOOL *stop) {
-                if(group != nil) {
-                    [self.assetGroups addObject:group];
-                }
-                else
-                {
-                    for (int i = 0; i < self.assetGroups.count - 1; i++) {
-                        ALAssetsGroup *group = [self.assetGroups objectAtIndex:i];
-                        [group enumerateAssetsUsingBlock:selectResultBlock];
-                    }
-                    
-                    if (self.assetGroups.count >= 1)
-                    {
-                        ALAssetsGroup *group = [self.assetGroups objectAtIndex:self.assetGroups.count - 1];
-                        [group enumerateAssetsUsingBlock:selectedResultLastBlock];
-                    }
-                }
-            };
-            
-            [self.picker.assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
-                                                     usingBlock:assetGroupEnumerator
-                                                   failureBlock:^(NSError *error) {NSLog(@"There is an error");}];
+            // sort objeccts
+            NSArray *sortedArray = [self.picker.selectedAssets sortedArrayUsingComparator:^NSComparisonResult(id a, id b)
+                                    {
+                                        ALAsset *assetA = (ALAsset *)a;
+                                        ALAsset *other = (ALAsset *)b;
+                                        NSComparisonResult ret = [[assetA valueForProperty:ALAssetPropertyDate] compare:[other valueForProperty:ALAssetPropertyDate]];
+                                        return ret;
+                                    }];
+            self.assets = [[NSMutableArray alloc] initWithArray:sortedArray];
+            [self reloadData];
         }
             break;
             
