@@ -479,13 +479,16 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
             NSString *strGroupUrl = [NSString stringWithFormat:@"%@", [groupUrl absoluteString]];
             
             NSString *previousUrl = [self.picker.previousAssets objectForKey:strGroupUrl];
-            if (previousUrl != nil || ![previousUrl isEqualToString:@""])
+            if (previousUrl != nil && ![previousUrl isEqualToString:@""])
             {
                 [self.picker.assetsLibrary assetForURL:[NSURL URLWithString:previousUrl] resultBlock:^(ALAsset *asset) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        NSUInteger index = [self.assets indexOfObject:asset];
-                        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
-                        [self scrollToIndexPath:indexPath animated:NO];
+                        if (asset != nil)
+                        {
+                            NSUInteger index = [self.assets indexOfObject:asset];
+                            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+                            [self scrollToIndexPath:indexPath animated:NO];
+                        }
                     });
                 } failureBlock:^(NSError *error) {
                 }];
@@ -567,7 +570,7 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         return;
     
     UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionViewLayout;
-    
+    int index = indexPath.row;
     CGPoint pt = [self pointForIndexPath:indexPath];
     
     CGPoint bottomOffset = CGPointMake(0, self.collectionView.contentSize.height - self.collectionView.bounds.size.height);
