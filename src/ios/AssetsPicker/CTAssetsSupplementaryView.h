@@ -33,7 +33,8 @@
 @interface CTAssetsSupplementaryView : UICollectionReusableView
 
 @property (nonatomic, strong) UILabel *label;
+@property (nonatomic, strong) UIActivityIndicatorView *indicator;
 
-- (void)bind:(NSArray *)assets;
+- (void)bind:(NSArray *)assets isLoading:(BOOL)isLoading;
 
 @end

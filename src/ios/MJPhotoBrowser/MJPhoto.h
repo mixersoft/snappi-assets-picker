@@ -6,12 +6,13 @@
 
 #import <Foundation/Foundation.h>
 #import <AssetsLibrary/AssetsLibrary.h>
+#import "CTAsset.h"
 
 
 @interface MJPhoto : NSObject
 //@property (nonatomic, strong) NSURL *url;
 //@property (nonatomic, strong) UIImage *image; // 完整的图片
-@property (nonatomic, strong) ALAsset *asset;
+@property (nonatomic, strong) CTAsset *ctasset;
 
 @property (nonatomic) BOOL selected;
 @property (nonatomic) BOOL overlay;

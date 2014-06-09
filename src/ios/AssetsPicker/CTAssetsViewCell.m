@@ -60,14 +60,14 @@
     return self;
 }
 
-- (void)bind:(ALAsset *)asset
+- (void)bind:(CTAsset *)ctasset
 {
-    self.asset  = asset;
-    self.type   = [asset valueForProperty:ALAssetPropertyType];
-    self.image  = (asset.thumbnail == NULL) ? [UIManager sharedManager].emptyImage : [UIImage imageWithCGImage:asset.thumbnail];
+    self.ctasset  = ctasset;
+    self.type   = [ctasset.asset valueForProperty:ALAssetPropertyType];
+    self.image  = (ctasset.asset.thumbnail == NULL) ? [UIManager sharedManager].emptyImage : [UIImage imageWithCGImage:ctasset.asset.thumbnail];
     
     if ([self.type isEqual:ALAssetTypeVideo])
-        self.title = [NSDate timeDescriptionOfTimeInterval:[[asset valueForProperty:ALAssetPropertyDuration] doubleValue]];
+        self.title = [NSDate timeDescriptionOfTimeInterval:[[ctasset.asset valueForProperty:ALAssetPropertyDuration] doubleValue]];
 }
 
 - (void)setSelected:(BOOL)selected
@@ -194,21 +194,21 @@
 
 - (NSString *)typeLabel
 {
-    NSString *type = [self.asset valueForProperty:ALAssetPropertyType];
+    NSString *type = [self.ctasset.asset valueForProperty:ALAssetPropertyType];
     NSString *key  = ([type isEqual:ALAssetTypeVideo]) ? @"Video" : @"Photo";
     return NSLocalizedString(key, nil);
 }
 
 - (NSString *)orientationLabel
 {
-    CGSize dimension = self.asset.defaultRepresentation.dimensions;
+    CGSize dimension = self.ctasset.asset.defaultRepresentation.dimensions;
     NSString *key    = (dimension.height >= dimension.width) ? @"Portrait" : @"Landscape";
     return NSLocalizedString(key, nil);
 }
 
 - (NSString *)dateLabel
 {
-    NSDate *date = [self.asset valueForProperty:ALAssetPropertyDate];
+    NSDate *date = [self.ctasset.asset valueForProperty:ALAssetPropertyDate];
     
     NSDateFormatter *df             = [[NSDateFormatter alloc] init];
     df.locale                       = [NSLocale currentLocale];

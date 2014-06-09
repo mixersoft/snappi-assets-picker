@@ -51,7 +51,7 @@
     //_indexLabel.text = [NSString stringWithFormat:@"%d / %d", _currentPhotoIndex + 1, _photos.count];
     
     MJPhoto *photo = _photos[_currentPhotoIndex];
-    _indexLabel.text = [NSString stringWithFormat:@"%@", [photo.asset.defaultRepresentation filename]];
+    _indexLabel.text = [NSString stringWithFormat:@"%@", [photo.ctasset.asset.defaultRepresentation filename]];
 }
 
 @end

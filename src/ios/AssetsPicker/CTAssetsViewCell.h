@@ -27,6 +27,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AssetsLibrary/AssetsLibrary.h>
+#import "CTAsset.h"
 
 
 
@@ -34,8 +35,8 @@
 
 @property (nonatomic, assign, getter = isEnabled) BOOL enabled;
 @property (nonatomic, assign, getter = isOverlay) BOOL overlay;
-@property (nonatomic, strong) ALAsset *asset;
+@property (nonatomic, strong) CTAsset *ctasset;
 
-- (void)bind:(ALAsset *)asset;
+- (void)bind:(CTAsset *)ctasset;
 
 @end

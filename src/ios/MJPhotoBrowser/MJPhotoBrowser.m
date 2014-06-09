@@ -131,7 +131,7 @@
 {
     _photos = photos;
     
-    if (photos.count > 1) {
+    if (photos.count >= 1) {
         _visiblePhotoViews = [NSMutableSet set];
         _reusablePhotoViews = [NSMutableSet set];
     }
@@ -164,7 +164,7 @@
 #pragma mark - MJPhotoView代理
 - (void)photoViewSingleTap:(MJPhotoView *)photoView
 {
-    [self.assetsViewControllerDelegate tapAsset:photoView.photo.asset];
+    [self.assetsViewControllerDelegate tapAsset:photoView.photo.ctasset];
     [self updateNavbarState];
 }
 

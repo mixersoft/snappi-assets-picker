@@ -27,9 +27,15 @@
 
 #import "CTAssetsSupplementaryView.h"
 
+#define kIndicatorSize      30.0
+#define kSideMargin         10.0
+#define kGap                10.0
 
 
 @interface CTAssetsSupplementaryView ()
+
+@property (nonatomic, strong) NSLayoutConstraint *relateConstratint;
+@property (nonatomic, strong) NSLayoutConstraint *centerConstraint;
 
 @end
 
@@ -46,14 +52,29 @@
         _label = [self supplementaryLabel];
         [self addSubview:_label];
         
+        _indicator = [self activityIndicator];
+        [self addSubview:_indicator];
+        
         self.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:_label
-                                                         attribute:NSLayoutAttributeCenterX
-                                                         relatedBy:NSLayoutRelationEqual
-                                                            toItem:self
-                                                         attribute:NSLayoutAttributeCenterX
-                                                        multiplier:1.0f
-                                                          constant:0.0f]];
+        
+        [self addConstraint:[NSLayoutConstraint constraintWithItem:_indicator attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1.0f constant:kSideMargin]];
+        
+        _relateConstratint = [NSLayoutConstraint constraintWithItem:_label
+                                                          attribute:NSLayoutAttributeLeft
+                                                          relatedBy:NSLayoutRelationEqual
+                                                             toItem:_indicator
+                                                          attribute:NSLayoutAttributeRight
+                                                         multiplier:1.0f
+                                                           constant:kGap];
+        _centerConstraint = [NSLayoutConstraint constraintWithItem:_label
+                                                          attribute:NSLayoutAttributeCenterX
+                                                          relatedBy:NSLayoutRelationEqual
+                                                             toItem:self
+                                                          attribute:NSLayoutAttributeCenterX
+                                                         multiplier:1.0f
+                                                           constant:0.0f];
+        
+        [self addConstraint:_relateConstratint];
     }
     
     return self;
@@ -69,8 +90,17 @@
     return label;
 }
 
-- (void)bind:(NSArray *)assets
+- (UIActivityIndicatorView *)activityIndicator
 {
+    UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(self.bounds.origin.x + kSideMargin, self.bounds.origin.y + kSideMargin, kIndicatorSize, self.bounds.size.height - kSideMargin * 2)];
+    [activityIndicator setColor:[UIColor blackColor]];
+    
+    return activityIndicator;
+}
+
+- (void)bind:(NSArray *)assets isLoading:(BOOL)isLoading
+{
+    /*
     NSInteger numberOfVideos = [assets filteredArrayUsingPredicate:[self predicateOfAssetType:ALAssetTypeVideo]].count;
     NSInteger numberOfPhotos = [assets filteredArrayUsingPredicate:[self predicateOfAssetType:ALAssetTypePhoto]].count;
     
@@ -80,6 +110,26 @@
         self.label.text = [NSString stringWithFormat:NSLocalizedString(@"%ld Videos", nil), (long)numberOfVideos];
     else
         self.label.text = [NSString stringWithFormat:NSLocalizedString(@"%ld Photos, %ld Videos", nil), (long)numberOfPhotos, (long)numberOfVideos];
+     */
+    if (isLoading)
+    {
+        [_indicator setHidden:NO];
+        [self removeConstraint:_centerConstraint];
+        [self addConstraint:_relateConstratint];
+        [_indicator startAnimating];
+        
+        self.label.text = [NSString stringWithFormat:NSLocalizedString(@"Loading", nil)];
+    }
+    else
+    {
+        [self removeConstraint:_relateConstratint];
+        [self addConstraint:_centerConstraint];
+        
+        [_indicator stopAnimating];
+        [_indicator setHidden:YES];
+        
+        self.label.text = [NSString stringWithFormat:NSLocalizedString(@"%ld Assets", nil), (long)assets.count];
+    }
 }
 
 - (NSPredicate *)predicateOfAssetType:(NSString *)type

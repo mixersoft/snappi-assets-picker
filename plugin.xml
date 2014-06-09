@@ -136,6 +136,10 @@
 	<header-file src="src/ios/ImageLibrary/UIImage+RoundedCorner.h" />
         <source-file src="src/ios/ImageLibrary/UIImage+RoundedCorner.m" />
 
+	<!-- SVProgressHUD -->
+	<header-file src="src/ios/SVProgressHUD/SVProgressHUD.h" />
+	<source-file src="src/ios/SVProgressHUD/SVProgressHUD.m" />
+	<resource-file src="src/ios/SVProgressHUD/SVProgressHUD.bundle" />
         	
 	<!-- system frameworks -->
 	<framework src="AssetsLibrary.framework" weak="true" />

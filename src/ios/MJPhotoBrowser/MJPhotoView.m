@@ -95,7 +95,7 @@
         [self photoStartLoad];
     }
     */
-    UIImage *img = [UIImage imageWithCGImage:_photo.asset.defaultRepresentation.fullScreenImage];
+    UIImage *img = [UIImage imageWithCGImage:_photo.ctasset.asset.defaultRepresentation.fullScreenImage];
     _imageView.image = img; // 占位图片
     
     //_photo.srcImageView.image = nil;
@@ -266,7 +266,9 @@
     }
     
     [UIView animateWithDuration:duration + 0.1 animations:^{
-        _imageView.frame = [_photo.srcView convertRect:_photo.srcView.bounds toView:nil];
+        CGRect rtSrcBounds = _photo.srcView.bounds;
+        CGRect rtConverted = [_photo.srcView convertRect:rtSrcBounds toView:nil];
+        _imageView.frame = rtConverted;
         
         // gif图片仅显示第0张
         if (_imageView.image.images) {

@@ -30,6 +30,7 @@
 #import "CTAssetsGroupViewController.h"
 #import "CTAssetsGroupViewCell.h"
 #import "CTAssetsViewController.h"
+#import "SVProgressHUD.h"
 
 
 
@@ -173,7 +174,10 @@
                 shouldShowGroup = YES;
             
             if (shouldShowGroup)
+            {
                 [self.groups addObject:group];
+            }
+            
         }
         else
         {
@@ -387,10 +391,23 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeNormal];
+#if true
+    //[SVProgressHUD showWithStatus:@"Loading" maskType:SVProgressHUDMaskTypeGradient];
+    
+    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeNormal withPicker:self.picker];
     vc.assetsGroup = [self.groups objectAtIndex:indexPath.row];
     
+    [vc setupAssetsForAlbum:vc.assetsGroup withCompletion:^(){
+        //[SVProgressHUD dismiss];
+        [self.picker pushViewController:vc animated:YES];
+    }];
+    
+#else
+    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeNormal];
+    vc.assetsGroup = [self.groups objectAtIndex:indexPath.row];
     [self.picker pushViewController:vc animated:YES];
+#endif
+    
 }
 
 @end

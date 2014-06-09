@@ -27,6 +27,9 @@
 
 #import <UIKit/UIKit.h>
 #import <AssetsLibrary/AssetsLibrary.h>
+#import "CTAsset.h"
+
+@class CTAssetsPickerController;
 
 typedef enum {
     CTAssetsViewTypeNormal = 0,
@@ -36,7 +39,7 @@ typedef enum {
 
 @protocol CTAssetsViewControllerDelegate <NSObject>
 
-- (void) tapAsset:(ALAsset *)asset;
+- (void) tapAsset:(CTAsset *)ctasset;
 
 @end
 
@@ -44,7 +47,15 @@ typedef enum {
 
 @property (nonatomic) CTAssetsViewType  viewType;
 @property (nonatomic, strong) ALAssetsGroup *assetsGroup;
+@property (nonatomic, strong) NSMutableArray *assets;
+@property (nonatomic) BOOL bShowFirst;
+@property (nonatomic) BOOL isLoading;
 
-- (id)initWithType:(CTAssetsViewType)type;
+
+- (id)initWithType:(CTAssetsViewType)type withPicker:(CTAssetsPickerController *)picker;
+
+- (void)setupAssetsForAlbum:(ALAssetsGroup *)group withCompletion:(void(^)())block;
+- (void)setupSelectedAssetsWithCompletion:(void(^)())block;
+- (void)setupWholeAssetsWithCompletion:(void(^)())block;
 
 @end

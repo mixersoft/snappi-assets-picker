@@ -30,6 +30,7 @@
 #import "CTAssetsGroupViewController.h"
 #import "CTAssetsViewController.h"
 #import "CTAssetsViewController.h"
+#import "SVProgressHUD.h"
 
 
 
@@ -57,19 +58,22 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 
 - (id)init:(BOOL)isDateBookmark
 {
-
-    
-    
     
     if (isDateBookmark)
     {
-        CTAssetsViewController *viewController = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeBookmarks];
+        CTAssetsViewController *viewController = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeBookmarks withPicker:self];
         
-        self = [super initWithRootViewController:viewController];
+        //self = [super initWithRootViewController:viewController];
+        self = [super init];
+        self.isDateBookmark = isDateBookmark;
+        
+        
+        [self setViewControllers:@[viewController] animated:NO];
     }
     else
     {
         CTAssetsGroupViewController *groupViewController = [[CTAssetsGroupViewController alloc] init];
+
         self = [super initWithRootViewController:groupViewController];
     }
     
@@ -82,6 +86,7 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
         _selectedAssetObjs = [[NSMutableArray alloc] init];
         _overlayAssets      = [[NSMutableArray alloc] init];
         _showsCancelButton  = YES;
+        _previousAssets     = [[NSMutableDictionary alloc] init];
 
         self.preferredContentSize = kPopoverContentSize;
         
@@ -109,6 +114,21 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
         } failureBlock:^(NSError *error) {
         }];
     }
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+ /*
+    if (self.isDateBookmark)
+    {
+        [SVProgressHUD showWithStatus:@"Loading"];
+        CTAssetsViewController *vc = [self.viewControllers objectAtIndex:0];
+        [vc setupWholeAssetsWithCompletion:^(){
+            [SVProgressHUD dismiss];
+        }];
+    }
+  */
 }
 
 - (void)didReceiveMemoryWarning
@@ -228,6 +248,10 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 
 - (void)deselectAsset:(ALAsset *)asset
 {
+    int index = [self.selectedAssets indexOfObject:asset];
+    if (index > self.selectedAssets.count)
+        return;
+    
     [self removeObjectFromSelectedAssetsAtIndex:[self.selectedAssets indexOfObject:asset]];
 }
 
@@ -479,9 +503,11 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 
 - (void)showSelected:(id)sender
 {
-    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeFiltered];
-    
-    [self pushViewController:vc animated:YES];
+    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeFiltered withPicker:self];
+    [vc setupSelectedAssetsWithCompletion:^(){
+        //[SVProgressHUD dismiss];
+        [self pushViewController:vc animated:YES];
+    }];
 }
 
 

@@ -40,7 +40,7 @@
 {
     _photos = photos;
     
-    if (_photos.count > 1) {
+    if (_photos.count >= 1) {
         _iconView = [[UIImageView alloc] init];
         CGSize imageSize = [UIManager sharedManager].checkedIcon.size;
         _iconView.frame = CGRectMake(self.bounds.size.width - imageSize.width - kSideMargin, kTopmargin, imageSize.width, imageSize.height);
