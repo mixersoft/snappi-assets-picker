@@ -60,6 +60,8 @@
         <source-file src="src/ios/AssetsPicker/CTAssetsViewController.m" />
 	<header-file src="src/ios/AssetsPicker/NSDate+timeDescription.h" />
         <source-file src="src/ios/AssetsPicker/NSDate+timeDescription.m" />
+	<header-file src="src/ios/AssetsPicker/CTAsset.h" />
+        <source-file src="src/ios/AssetsPicker/CTAsset.m" />
 
 	<!-- helper header and source files -->
 	<header-file src="src/ios/Helper/URLParser.h" />
