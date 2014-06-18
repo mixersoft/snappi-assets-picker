@@ -793,7 +793,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
 
 This software is released under the [Apache 2.0 License][apache2_license].
 
-© 2013-2014 appPlant UG, Inc. All rights reserved
+© 2013-2014 Snaphappi, Inc. All rights reserved
 
 [ctassetspickercontroller]: https://github.com/chiunam/CTAssetsPickerController
 [cordova-plugin-local-notifications]: https://github.com/katzer/cordova-plugin-local-notifications
