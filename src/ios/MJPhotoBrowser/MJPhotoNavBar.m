@@ -29,8 +29,8 @@
     MJPhoto *photo = [_photos objectAtIndex:currentPhotoIndex];
     if (photo.selected)
         _iconView.image = [UIManager sharedManager].checkedIcon;
-    else if (photo.overlay)
-        _iconView.image = [UIManager sharedManager].overlayIcon;
+    else if (photo.overlayName)
+        _iconView.image = [[UIManager sharedManager] overlayIconForKey:photo.overlayName];
     else
         _iconView.image = nil;
         //_iconView.image = [UIManager sharedManager].uncheckedIcon;

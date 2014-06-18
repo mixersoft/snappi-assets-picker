@@ -76,9 +76,9 @@
     [self setNeedsDisplay];
 }
 
-- (void)setOverlay:(BOOL)overlay
+- (void)setOverlayName:(NSString *)overlayName
 {
-    _overlay = overlay;
+    _overlayName = overlayName;
     [self setNeedsDisplay];
 }
 
@@ -98,7 +98,7 @@
     
     else {
         
-        if (self.overlay && !self.selected)
+        if (self.overlayName && !self.selected)
             [self drawOverlayViewInRect:rect];
         
         else if (self.selected)
@@ -175,7 +175,8 @@
     CGContextSetFillColorWithColor(context, [UIManager sharedManager].overlayColor.CGColor);
     CGContextFillRect(context, rect);
     
-    [[UIManager sharedManager].overlayIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - [UIManager sharedManager].overlayIcon.size.width, CGRectGetMinY(rect))];
+    UIImage *overlayIcon = [[UIManager sharedManager] overlayIconForKey:self.overlayName];
+    [overlayIcon drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - overlayIcon.size.width, CGRectGetMinY(rect))];
 }
 
 

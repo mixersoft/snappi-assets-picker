@@ -57,9 +57,9 @@
  */
 @property (nonatomic, strong) NSMutableArray *selectedAssets;
 
-@property (nonatomic, strong) NSMutableArray *selectedAssetObjs;
+@property (nonatomic, strong) NSMutableDictionary *prevOverlayAssetIds;
 
-@property (nonatomic, strong) NSMutableArray *overlayAssets;
+@property (nonatomic, strong) NSMutableDictionary *overlayAssets;
 
 /**
  *  Determines whether or not the cancel button is visible in the picker.

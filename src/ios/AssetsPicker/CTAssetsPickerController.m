@@ -83,8 +83,8 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
         _assetsLibrary      = [self.class defaultAssetsLibrary];
         _assetsFilter       = [ALAssetsFilter allAssets];
         _selectedAssets     = [[NSMutableArray alloc] init];
-        _selectedAssetObjs = [[NSMutableArray alloc] init];
-        _overlayAssets      = [[NSMutableArray alloc] init];
+        _prevOverlayAssetIds = [[NSMutableDictionary alloc] init];
+        _overlayAssets      = [[NSMutableDictionary alloc] init];
         _showsCancelButton  = YES;
         _previousAssets     = [[NSMutableDictionary alloc] init];
 
@@ -105,15 +105,19 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 {
     [super viewWillAppear:animated];
     
-    for (int i = 0; i < self.selectedAssetObjs.count; i++)
-    {
-        NSString *url = [self.selectedAssetObjs objectAtIndex:i];
-        [[CTAssetsPickerController defaultAssetsLibrary] assetForURL:[NSURL URLWithString:url] resultBlock:^(ALAsset *asset) {
-            //[self performSelector:@selector(selectAsset:) withObject:asset afterDelay:NO];
-            [self performSelector:@selector(overlayAsset:) withObject:asset afterDelay:NO];
-        } failureBlock:^(NSError *error) {
-        }];
+    for (NSString *overlayName in [self.prevOverlayAssetIds allKeys]) {
+        NSArray *assetIds = [self.prevOverlayAssetIds objectForKey:overlayName];
+        for (int i = 0; i < assetIds.count; i++)
+        {
+            NSString *url = [assetIds objectAtIndex:i];
+            [[CTAssetsPickerController defaultAssetsLibrary] assetForURL:[NSURL URLWithString:url] resultBlock:^(ALAsset *asset) {
+                //[self performSelector:@selector(selectAsset:) withObject:asset afterDelay:NO];
+                [self performSelector:@selector(overlayAsset:) withObject:@{@"overlayName": overlayName, @"asset":asset} afterDelay:NO];
+            } failureBlock:^(NSError *error) {
+            }];
+        }
     }
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -229,14 +233,15 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
     [self.selectedAssets replaceObjectAtIndex:index withObject:object];
 }
 
-- (void)insertOverlay:(id)object atIndex:(NSUInteger)index
+- (void)insertOverlay:(NSDictionary *)dic
 {
-    [self.overlayAssets insertObject:object atIndex:index];
-}
-
-- (NSUInteger)countOfOverlayAssets
-{
-    return self.overlayAssets.count;
+    NSMutableArray *assets = [self.overlayAssets objectForKey:[dic objectForKey:@"overlayName"]];
+    if (assets == nil)
+    {
+        assets = [[NSMutableArray alloc] init];
+        [self.overlayAssets setObject:assets forKey:[dic objectForKey:@"overlayName"]];
+    }
+    [assets addObject:[dic objectForKey:@"asset"]];
 }
 
 #pragma mark - Select / Deselect Asset
@@ -256,9 +261,9 @@ NSString * const CTAssetsPickerSelectedAssetsChangedNotification = @"CTAssetsPic
 }
 
 #pragma mark - Overlay Asset
-- (void)overlayAsset:(ALAsset *)asset
+- (void)overlayAsset:(NSDictionary *)dic
 {
-    [self insertOverlay:asset atIndex:[self countOfOverlayAssets]];
+    [self insertOverlay:dic];
 }
 
 

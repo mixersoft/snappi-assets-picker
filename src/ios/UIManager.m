@@ -33,7 +33,12 @@ static UIManager *_sharedManager = nil;
         self.selectedColor   = [UIColor colorWithWhite:1 alpha:0.3];
         self.disabledColor   = [UIColor colorWithWhite:1 alpha:0.9];
         
-        self.overlayIcon     = [UIImage imageNamed:@"CTAssetsPickerOverlay"];
+        // overlay icons
+        self.overlayIcons     = [[NSMutableDictionary alloc] init];
+        
+        // set default overlay icon
+        [self.overlayIcons setObject:[UIImage imageNamed:@"CTAssetsPickerOverlay"] forKey:kDefaultOverlayIconKey];
+        
         self.overlayColor    = [UIColor colorWithWhite:1 alpha:0.3];
         
         self.emptyImage      = [UIImage imageNamed:@"CTAssetsPickerEmpty"];
@@ -44,6 +49,16 @@ static UIManager *_sharedManager = nil;
     }
     return self;
 
+}
+
+- (UIImage *)overlayIconForKey:(NSString *)key
+{
+    UIImage *icon = [self.overlayIcons objectForKey:key];
+    
+    if (icon == nil)
+        icon = [self.overlayIcons objectForKey:kDefaultOverlayIconKey];
+    
+    return icon;
 }
 
 @end

@@ -20,7 +20,7 @@
     DestinationType _destType;
     EncodingType _encodeType;
     NSDictionary *_overlays;    // {overlayName, array of assetIds}
-    NSDictionary *_overlayIcons;
+    NSMutableDictionary *_overlayIcons;
     NSURL *_assetURL;
     NSString *_uuid;
     int _targetWidth;
@@ -58,11 +58,11 @@
     self.picker.previousDates = [[NSMutableArray alloc] initWithArray:_highlightDates];
     
     // set selected assets
-    NSArray *selectedAssetObjs = [_overlays objectForKey:kPreviousSelectedName];
-    if (selectedAssetObjs != nil)
-        self.picker.selectedAssetObjs = [[NSMutableArray alloc] initWithArray:selectedAssetObjs];
+    
+    if (_overlayIcons != nil)
+        self.picker.prevOverlayAssetIds = [[NSMutableDictionary alloc] initWithDictionary:_overlays];
     else
-        self.picker.selectedAssetObjs  = [[NSMutableArray alloc] init];
+        self.picker.prevOverlayAssetIds  = [[NSMutableDictionary alloc] init];
     
     // iPad
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
@@ -187,7 +187,7 @@
             }
             else
             {
-                [UIManager sharedManager].overlayIcon = img;
+                [[UIManager sharedManager].overlayIcons setObject:img forKey:overlayName];
                 
                 bRet = YES;
                 
@@ -859,6 +859,11 @@
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:formatString];
     return [dateFormatter dateFromString:dateString];
+}
+
+
+@end
+romString:dateString];
 }
 
 

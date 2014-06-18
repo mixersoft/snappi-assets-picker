@@ -1112,17 +1112,23 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
         cell.enabled = YES;
     
     MJPhoto *photo = [self.photos objectAtIndex:indexPath.row];
-    
+
+    BOOL isOverlay = NO;
     // Overlay feature
-    if ([self.picker.overlayAssets containsObject:asset])
-    {
-        cell.overlay = YES;
-        photo.overlay = YES;
+    for (NSString *overlayName in [self.picker.overlayAssets allKeys]) {
+        NSArray *assets = [self.picker.overlayAssets objectForKey:overlayName];
+        if ([assets containsObject:asset])
+        {
+            cell.overlayName = overlayName;
+            photo.overlayName = overlayName;
+            isOverlay = YES;
+        }
     }
-    else
+    
+    if (isOverlay == NO)
     {
-        cell.overlay = NO;
-        photo.overlay = NO;
+        cell.overlayName = nil;
+        photo.overlayName = nil;
     }
     
     // XXX

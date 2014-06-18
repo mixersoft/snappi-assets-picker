@@ -15,7 +15,7 @@
 @property (nonatomic, strong) CTAsset *ctasset;
 
 @property (nonatomic) BOOL selected;
-@property (nonatomic) BOOL overlay;
+@property (nonatomic, strong) NSString *overlayName;
 
 @property (nonatomic, strong) UIView *srcView; // 来源view
 @property (nonatomic, strong, readonly) UIImage *capture;
