@@ -33,8 +33,14 @@ typedef enum {
 #define kCorrectOrientation     @"correctOrientation"
 #define kBookmarks              @"bookmarks"
 #define kBookmarksDate          @"date"
+#define kPluckKey               @"pluck"
+#define kFromDateKey            @"fromDate"
+#define kToDateKey              @"toDate"
+#define kLastDateKey            @"lastDate"
+#define kAssetsKey              @"assets"
 
 #define DATETIME_FORMAT @"yyyy-MM-dd HH:mm:ss"
+#define DATE_FORMAT @"yyyy-MM-dd"
 
 // parameter
 #define kQualityKey         @"quality"
@@ -58,6 +64,8 @@ typedef enum {
 - (void)getById:(CDVInvokedUrlCommand *)command;
 - (void)setOverlay:(CDVInvokedUrlCommand *)command;
 - (void)getPreviousAlbums:(CDVInvokedUrlCommand *)command;
+- (void)mapAssetsLibrary:(CDVInvokedUrlCommand *)command;
+
 
 
 + (NSString *)date2str:(NSDate *)convertDate withFormat:(NSString *)formatString;

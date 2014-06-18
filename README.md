@@ -263,6 +263,83 @@ function onGetPreviousAlbumsSuccess(result)
 }
 ```
 
+### mapAssetsLibrary
+ The initial purpose of this method is to get a list of every photo on the device by EXIF DateOriginalTaken, but a JS callback may be more flexible. It should be similar to _.pick, see http://lodash.com/docs#pick
+
+```
+mapAssetsLibrary(success, failure, options):
+
+  options.pluck = [array of exif attributes]
+  // add limits to map 
+  options.fromDate = "yyyy-MM-dd";
+  option.toDate = "yyyy-MM-dd";
+
+get object in the following form:
+mapped = {
+    // use lastDate as options.fromDate to limit map
+    lastDate: [Date]
+    assets: [{
+        id: [AlAssetsId]
+        data: { plucked attributes }
+    }
+    ]
+}
+
+example: 
+   window.plugin.snappi.assetspicker.mapAssetsLibrary(onMapSuccess, onMapFailed, {
+      pluck:['DateTimeOriginal', 'PixelXDimension']
+      fromDate: "2014-04-24"
+   });
+
+   function onMapSuccess(mapped)
+   {
+   	// mapped.lastDate : "2014-06-17"
+	// mapped.assets = [array of item] in the following form:
+	//	{ 
+	//	  id:   ALAssetsId, 
+	//	  data: {plucked attributes}
+	//      }
+   }
+```
+
+#### success
+The corresponding function is called when mapping is success.
+```
+onMapSuccess(mapped)
+{
+	//
+}
+```
+mapped is result object of mapAssetsLibrary.
+```
+mapped = {
+    // use lastDate as options.fromDate to limit map
+    lastDate: [Date]
+    assets: [{
+        id: [AlAssetsId]
+        data: { plucked attributes }
+    }
+    ]
+}
+
+```
+- lastDate : Date of last asset in the mapped array. The corresponding value is in the form "yyyy-MM-dd".
+- id : URL string of asset. The corresponding value is unique identifier of asset.
+- data : {plucked attributes}. exif attributes that are specified options parameter.
+
+#### failure
+The corresponding function is called when mapping is failed.
+
+#### options
+The corresponding parameter is in the following form:
+```
+options = {
+	pluck : [array of exif attributes], when this is not specified, then take every exif attributes
+	fromDate : start date with format "yyyy-MM-dd", when this is not specified, then ignore start date.
+	toDate : end date with format "yyyy-MM-dd", when this is not specified, then ignore end date.
+}
+```
+
 
 ### onSuccess
 onSuccess callback function that provides the selected images.
@@ -486,12 +563,13 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         <div style="position:absolute;left:20%;top:20%">
             <input type="button" value="Pick" onclick="onPick()" style="width:100px;height:30px"/>
             <input type="button" value="Clear" onclick="onClear()" style="width:100px;height:30px"/>
+            <input type="button" value="Map" onclick="onMap()" style="width:100px;height:30px"/>
         </div>
         <div style="position:absolute;left:20%;top:30%">
             <input type="radio" value="0" id="normal" name="type" onclick="onNormalBookmarkClicked()" checked/>
-                <label for="normal" value="Normal Bookmarks" >Normal Bookmarks </label> <br>
+            <label for="normal" value="Normal Bookmarks" >Normal Bookmarks </label> <br>
             <input type="radio" value="1" id="date" name="type" onclick="onDateBookmarkClicked()"/>
-                <label for="date" value="Date Bookmarks">Date Bookmarks </label>
+            <label for="date" value="Date Bookmarks">Date Bookmarks </label>
         </div>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/index.js"></script>
@@ -514,7 +592,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             // called when "pick" button is clicked
             function onPick()
             {
-               
+                
                 // set overlay icon
                 if (document.getElementById("overlay"))
                 {
@@ -567,7 +645,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         // success callback
         function onSuccess(dataArray)
         {
-	    // get previous albums
+            // get previous albums
             if (document.getElementById("normal").checked)
             {
                 getPreviousAlbums();
@@ -616,7 +694,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         // cancel callback
         function onCancel(message)
         {
-	    // get previous albums
+            // get previous albums
             if (document.getElementById("normal").checked)
             {
                 getPreviousAlbums();
@@ -678,8 +756,26 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             previousAlbums = { "date" : ["2014-04-04", "2014-06-03", "2014-06-04", "2014-06-05"]};
         }
         
+        function onMap()
+        {
+            options = {
+                pluck:["DateTimeOriginal"],
+                fromDate:"2014-04-04",
+                toDate:"2014-06-04"};
+            window.plugin.snappi.assetspicker.mapAssetsLibrary(onMapSuccess, onMapFailed, options);
+        }
+        
+        function onMapSuccess(mapped)
+        {
+            alert(mapped.lastDate + ",  count : " + mapped.assets.length);
+        }
+        
+        function onMapFailed(message)
+        {
+            //
+        }
+        
             </script>
-
     </body>
 </html>
 ```

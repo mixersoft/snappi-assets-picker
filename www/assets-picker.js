@@ -44,6 +44,10 @@ cordova.define("cordova/plugin/AssetsPickerPlugin", function(require, exports, m
                 exec(success, failure, "CAssetsPickerPlugin", "getPreviousAlbums", []);
                };
                
+		AssetsPickerPlugin.prototype.mapAssetsLibrary = function(success, failure, options) {
+               exec(success, failure, "CAssetsPickerPlugin", "mapAssetsLibrary", [options]);
+               }
+
                var myplugin = new AssetsPickerPlugin();
                
                module.exports = myplugin;

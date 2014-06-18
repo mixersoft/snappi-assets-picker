@@ -120,6 +120,8 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
     lpgr.delegate = self;
     [self.collectionView addGestureRecognizer:lpgr];
 
+    // hide the status bar
+    //[[UIApplication sharedApplication]setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
 
 }
 

@@ -9,6 +9,7 @@
 #import "CAssetsPickerPlugin.h"
 #import "URLParser.h"
 #import "UIManager.h"
+#import "ALAssetUtils.h"
 
 #define EXT_JPG     @"JPG"
 #define EXT_PNG     @"PNG"
@@ -248,6 +249,141 @@
     
 }
 
+- (void)mapAssetsLibrary:(CDVInvokedUrlCommand *)command
+{
+    self.hasPendingOperation = YES;
+    self.latestCommand = command;
+    
+    NSArray *pluck = nil;
+    NSDate *fromDate = nil;
+    NSDate *toDate = nil;
+    
+    // parse command
+    if (command.arguments.count < 1)
+    {
+        //
+    }
+    else
+    {
+        NSDictionary *options = [command.arguments objectAtIndex:0];
+        
+        pluck = [options objectForKey:kPluckKey];
+       
+        NSString *dateString = [options objectForKey:kFromDateKey];
+        if (dateString != nil)
+            fromDate = [CAssetsPickerPlugin str2date:dateString withFormat:DATE_FORMAT];
+        
+        dateString = [options objectForKey:kToDateKey];
+        if (dateString != nil)
+            toDate = [CAssetsPickerPlugin str2date:dateString withFormat:DATE_FORMAT];
+    }
+
+    
+    // filtering albums
+    if (fromDate != nil)
+    {
+        NSString *strDate = [CAssetsPickerPlugin date2str:fromDate withFormat:DATE_FORMAT];
+        fromDate = [CAssetsPickerPlugin str2date:strDate withFormat:DATE_FORMAT];
+    }
+    
+    if (toDate != nil)
+    {
+        NSString *strDate = [CAssetsPickerPlugin date2str:toDate withFormat:DATE_FORMAT];
+        strDate = [NSString stringWithFormat:@"%@ 23:59:59", strDate];
+        toDate = [CAssetsPickerPlugin str2date:strDate withFormat:DATETIME_FORMAT];
+    }
+    
+    [ALAssetUtils getAssetsWithFromDate:fromDate toDate:toDate complete:^(NSArray *arrayAssets){
+        CDVPluginResult *pluginResult = nil;
+        NSString *resultJS = nil;
+        
+        // mapped.lastDate :
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        if (arrayAssets.count == 0)
+        {
+            if (fromDate == nil && toDate == nil)
+            {
+                [dic setObject:@"" forKey:kLastDateKey];
+            }
+            else if (fromDate != nil && toDate == nil)
+            {
+                [dic setObject:[CAssetsPickerPlugin date2str:fromDate withFormat:DATE_FORMAT] forKey:kLastDateKey];
+            }
+            else if (toDate != nil)
+            {
+                [dic setObject:[CAssetsPickerPlugin date2str:toDate withFormat:DATE_FORMAT] forKey:kLastDateKey];
+            }
+        }
+        else
+        {
+            ALAsset *asset = [arrayAssets lastObject];
+            NSDate *lastDate = [asset valueForProperty:ALAssetPropertyDate];
+            [dic setObject:[CAssetsPickerPlugin date2str:lastDate withFormat:DATE_FORMAT] forKey:kLastDateKey];
+        }
+        
+        // mapped.assets
+        if (arrayAssets.count == 0)
+        {
+            [dic setObject:@"" forKey:kAssetsKey];
+        }
+        else
+        {
+            NSMutableArray *retAssets = [[NSMutableArray alloc] initWithCapacity:arrayAssets.count];
+            for (ALAsset *asset in arrayAssets) {
+                NSDate *date = [asset valueForProperty:ALAssetPropertyDate];
+                CGFloat pixelXDimension = asset.defaultRepresentation.dimensions.width;
+                CGFloat pixelYDimension = asset.defaultRepresentation.dimensions.height;
+                
+                
+                NSMutableDictionary *dicData = [[NSMutableDictionary alloc] initWithCapacity:4];
+                
+                if (pluck == nil || pluck.count == 0)
+                {
+                    [dicData setObject:[CAssetsPickerPlugin date2str:date withFormat:DATETIME_FORMAT] forKey:kDateTimeOriginalKey];
+                    [dicData setObject:@(pixelXDimension) forKey:kPixelXDimensionKey];
+                    [dicData setObject:@(pixelYDimension) forKey:kPixelYDimensionKey];
+                    [dicData setObject:[asset valueForProperty:ALAssetPropertyOrientation] forKey:kOrientationKey];
+                }
+                else
+                {
+                    if ([pluck containsObject:kDateTimeOriginalKey])
+                    {
+                        [dicData setObject:[CAssetsPickerPlugin date2str:date withFormat:DATETIME_FORMAT] forKey:kDateTimeOriginalKey];
+                    }
+                    if ([pluck containsObject:kPixelXDimensionKey])
+                    {
+                        [dicData setObject:@(pixelXDimension) forKey:kPixelXDimensionKey];
+                    }
+                    if ([pluck containsObject:kPixelYDimensionKey])
+                    {
+                        [dicData setObject:@(pixelYDimension) forKey:kPixelYDimensionKey];
+                    }
+                    if ([pluck containsObject:kOrientationKey])
+                    {
+                        [dicData setObject:[asset valueForProperty:ALAssetPropertyOrientation] forKey:kOrientationKey];
+                    }
+                }
+                
+                [retAssets addObject:@{@"id": [NSString stringWithFormat:@"%@", ((NSURL*)[asset valueForProperty:ALAssetPropertyAssetURL]).absoluteString],
+                                       @"data": dicData}];
+                
+            }
+            
+            [dic setObject:retAssets forKey:kAssetsKey];
+        }
+        
+        //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dic];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dic];
+        //resultJS = [pluginResult toSuccessCallbackString:self.latestCommand.callbackId];
+        //dispatch_async(dispatch_get_main_queue(), ^(){
+        [self.commandDelegate runInBackground:^{
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+        //});
+    }];
+    
+}
+
 #pragma mark - Utility Functions
 
 - (void)initOptions
@@ -396,7 +532,11 @@
 
 - (NSDictionary *)objectFromAsset:(ALAsset *)asset fromThumbnail:(BOOL)fromThumbnail
 {
-    NSMutableDictionary* retValues = [NSMutableDictionary dictionaryWithCapacity:3];
+     NSMutableDictionary* retValues = [NSMutableDictionary dictionaryWithCapacity:3];
+    @autoreleasepool {
+        
+    
+   
     NSString *strUrl = [NSString stringWithFormat:@"%@", [[asset valueForProperty:ALAssetPropertyAssetURL] absoluteString] ];
     // obj.id
     [retValues setObject:strUrl forKey:kIdKey];
@@ -529,11 +669,13 @@
             [exif setObject:@(0) forKey:kPixelYDimensionKey];
         }
     }
+        
+        //obj.exif.Orientation
+        [exif setObject:[asset valueForProperty:ALAssetPropertyOrientation] forKey:kOrientationKey];
+        
+        [retValues setObject:exif forKey:kExifKey];
+    };
     
-    //obj.exif.Orientation
-    [exif setObject:[asset valueForProperty:ALAssetPropertyOrientation] forKey:kOrientationKey];
-    
-    [retValues setObject:exif forKey:kExifKey];
     
     return retValues;
 }

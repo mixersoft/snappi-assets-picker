@@ -62,12 +62,16 @@
 
 - (void)show:(UIViewController *)parent
 {
+    
+    
     if (parent == nil)
     {
         UIWindow *window = [UIApplication sharedApplication].keyWindow;
         [window addSubview:self.view];
         [window.rootViewController addChildViewController:self];
-
+        
+        [[UIApplication sharedApplication] setStatusBarHidden:YES];
+        
         if (_currentPhotoIndex == 0) {
             [self showPhotos];
         }
@@ -79,6 +83,11 @@
             [self showPhotos];
         }
     }
+}
+
+-(BOOL)prefersStatusBarHidden
+{
+    return YES;
 }
 
 #pragma mark - 私有方法
@@ -170,8 +179,12 @@
 
 - (void)photoViewDidEndZoom:(MJPhotoView *)photoView
 {
+#if true
     [self.view removeFromSuperview];
     [self removeFromParentViewController];
+#else
+    [self dismissViewControllerAnimated:NO completion:nil];
+#endif
 }
 
 - (void)photoViewImageFinishLoad:(MJPhotoView *)photoView
