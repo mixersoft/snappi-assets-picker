@@ -42,6 +42,8 @@ typedef enum {
 #define DATETIME_FORMAT @"yyyy-MM-dd HH:mm:ss"
 #define DATE_FORMAT @"yyyy-MM-dd"
 
+#define DATETIME_JSON_FORMAT @"yyyy-MM-dd'T'HH:mm:ss.SSS"
+
 // parameter
 #define kQualityKey         @"quality"
 #define kDestinationTypeKey @"destinationType"

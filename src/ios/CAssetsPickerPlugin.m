@@ -364,7 +364,8 @@
                     }
                 }
                 
-                [retAssets addObject:@{@"id": [NSString stringWithFormat:@"%@", ((NSURL*)[asset valueForProperty:ALAssetPropertyAssetURL]).absoluteString],
+                // id
+                [retAssets addObject:@{@"id": [CAssetsPickerPlugin getAssetId:asset] ,
                                        @"data": dicData}];
                 
             }
@@ -861,9 +862,18 @@
     return [dateFormatter dateFromString:dateString];
 }
 
-
-@end
-romString:dateString];
++ (NSString *)getAssetId:(ALAsset *)asset
+{
+    // obj.uuid
+    NSString *uuidString = @"";
+    URLParser *parser = [URLParser parserWithURL:[asset valueForProperty:ALAssetPropertyAssetURL]];
+    uuidString = [NSString stringWithFormat:@"%@", [parser valueForKey:@"id"]]; // ?id=xxx-xx&ext=JPG
+    
+    // obj.orig-ext
+    NSString *ext = [NSString stringWithFormat:@"%@", [parser valueForKey:@"ext"]];
+    
+    NSString *assetId = [NSString stringWithFormat:@"%@.%@", uuidString, ext];
+    return assetId;
 }
 
 
