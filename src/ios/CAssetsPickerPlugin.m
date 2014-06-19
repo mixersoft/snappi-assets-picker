@@ -270,29 +270,17 @@
         pluck = [options objectForKey:kPluckKey];
        
         NSString *dateString = [options objectForKey:kFromDateKey];
-        if (dateString != nil)
-            fromDate = [CAssetsPickerPlugin str2date:dateString withFormat:DATE_FORMAT];
+        if (dateString != nil && dateString.length >= 23)
+            fromDate = [CAssetsPickerPlugin str2date:[dateString substringToIndex:23] withFormat:DATETIME_JSON_FORMAT];
         
         dateString = [options objectForKey:kToDateKey];
-        if (dateString != nil)
-            toDate = [CAssetsPickerPlugin str2date:dateString withFormat:DATE_FORMAT];
+        if (dateString != nil && dateString.length >= 23)
+            toDate = [CAssetsPickerPlugin str2date:[dateString substringToIndex:23] withFormat:DATETIME_JSON_FORMAT];
     }
 
     
     // filtering albums
-    if (fromDate != nil)
-    {
-        NSString *strDate = [CAssetsPickerPlugin date2str:fromDate withFormat:DATE_FORMAT];
-        fromDate = [CAssetsPickerPlugin str2date:strDate withFormat:DATE_FORMAT];
-    }
-    
-    if (toDate != nil)
-    {
-        NSString *strDate = [CAssetsPickerPlugin date2str:toDate withFormat:DATE_FORMAT];
-        strDate = [NSString stringWithFormat:@"%@ 23:59:59", strDate];
-        toDate = [CAssetsPickerPlugin str2date:strDate withFormat:DATETIME_FORMAT];
-    }
-    
+
     [ALAssetUtils getAssetsWithFromDate:fromDate toDate:toDate complete:^(NSArray *arrayAssets){
         CDVPluginResult *pluginResult = nil;
         NSString *resultJS = nil;
@@ -307,18 +295,18 @@
             }
             else if (fromDate != nil && toDate == nil)
             {
-                [dic setObject:[CAssetsPickerPlugin date2str:fromDate withFormat:DATE_FORMAT] forKey:kLastDateKey];
+                [dic setObject:[CAssetsPickerPlugin date2str:fromDate withFormat:DATETIME_FORMAT] forKey:kLastDateKey];
             }
             else if (toDate != nil)
             {
-                [dic setObject:[CAssetsPickerPlugin date2str:toDate withFormat:DATE_FORMAT] forKey:kLastDateKey];
+                [dic setObject:[CAssetsPickerPlugin date2str:toDate withFormat:DATETIME_FORMAT] forKey:kLastDateKey];
             }
         }
         else
         {
             ALAsset *asset = [arrayAssets lastObject];
             NSDate *lastDate = [asset valueForProperty:ALAssetPropertyDate];
-            [dic setObject:[CAssetsPickerPlugin date2str:lastDate withFormat:DATE_FORMAT] forKey:kLastDateKey];
+            [dic setObject:[CAssetsPickerPlugin date2str:lastDate withFormat:DATETIME_FORMAT] forKey:kLastDateKey];
         }
         
         // mapped.assets

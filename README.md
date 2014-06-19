@@ -271,15 +271,15 @@ mapAssetsLibrary(success, failure, options):
 
   options.pluck = [array of exif attributes]
   // add limits to map 
-  options.fromDate = "yyyy-MM-dd";
-  option.toDate = "yyyy-MM-dd";
+  options.fromDate = [JSON string of date]; // see the following getJSONStringOfDate()
+  option.toDate = [JSON string of date]; // see the following getJSONStringOfDate()
 
 get object in the following form:
 mapped = {
     // use lastDate as options.fromDate to limit map
     lastDate: [Date]
     assets: [{
-        id: [AlAssetsId]
+        id: [AlAssetsId - uuid.ext]
         data: { plucked attributes }
     }
     ]
@@ -288,17 +288,25 @@ mapped = {
 example: 
    window.plugin.snappi.assetspicker.mapAssetsLibrary(onMapSuccess, onMapFailed, {
       pluck:['DateTimeOriginal', 'PixelXDimension']
-      fromDate: "2014-04-24"
+      fromDate: "2014-04-24T03:31:24.524Z"
    });
 
    function onMapSuccess(mapped)
    {
-   	// mapped.lastDate : "2014-06-17"
+   	// mapped.lastDate : "2014-06-17 05:12:36"
 	// mapped.assets = [array of item] in the following form:
 	//	{ 
 	//	  id:   ALAssetsId, 
 	//	  data: {plucked attributes}
 	//      }
+   }
+
+   // get JSON string of date in local-timezone(not UTC)
+   function getJSONStringOfDate()
+   {
+	x = new Date();
+	x.setHours(x.getHours() - x.getTimezoneOffset() / 60);
+	return x.toJSON();
    }
 ```
 
@@ -335,9 +343,18 @@ The corresponding parameter is in the following form:
 ```
 options = {
 	pluck : [array of exif attributes], when this is not specified, then take every exif attributes
-	fromDate : start date with format "yyyy-MM-dd", when this is not specified, then ignore start date.
-	toDate : end date with format "yyyy-MM-dd", when this is not specified, then ignore end date.
+	fromDate : start date with JSON date format in local-timezone, when this is not specified, then ignore start date.
+	toDate : end date with JSON date format in local-timezone, when this is not specified, then ignore end date.
 }
+
+Caller can use the following function to get JSON string of date in local-timezone for fromDate and toDate
+   // get JSON string of date in local-timezone(not UTC)
+   function getJSONStringOfDate()
+   {
+	x = new Date();
+	x.setHours(x.getHours() - x.getTimezoneOffset() / 60);
+	return x.toJSON();
+   }
 ```
 
 
@@ -760,8 +777,8 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         {
             options = {
                 pluck:["DateTimeOriginal"],
-                fromDate:"2014-04-04",
-                toDate:"2014-06-04"};
+                fromDate:"2014-04-04T12:03:24.234Z",
+                toDate:"2014-06-04T03:12:35.523Z"};
             window.plugin.snappi.assetspicker.mapAssetsLibrary(onMapSuccess, onMapFailed, options);
         }
         
