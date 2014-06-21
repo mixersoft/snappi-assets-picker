@@ -127,6 +127,15 @@ NSString * const CTAssetsSupplementaryViewIdentifier = @"CTAssetsSupplementaryVi
 
 - (void)viewWillAppear:(BOOL)animated
 {
+    
+    // iPad
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        CGSize size = self.picker.popoverSize;
+        self.contentSizeForViewInPopover = size;
+        self.preferredContentSize = size;
+    }
+    
     [super viewWillAppear:animated];
     
     [self setupButtons];

@@ -38,9 +38,11 @@ typedef enum {
 #define kToDateKey              @"toDate"
 #define kLastDateKey            @"lastDate"
 #define kAssetsKey              @"assets"
+#define kThumbnailKey           @"thumbnail"
 
 #define DATETIME_FORMAT @"yyyy-MM-dd HH:mm:ss"
 #define DATE_FORMAT @"yyyy-MM-dd"
+#define DATETIME_EXIF_FORMAT    @"yyyy:MM:dd HH:mm:ss"
 
 #define DATETIME_JSON_FORMAT @"yyyy-MM-dd'T'HH:mm:ss.SSS"
 
@@ -51,17 +53,53 @@ typedef enum {
 #define kTargetWidth        @"targetWidth"
 #define kTargetHeight       @"targetHeight"
 #define kOverlayKey         @"overlay"
+#define kPopoverOptions     @"popoverOptions"
+#define kPopoverRectX       @"x"
+#define kPopoverRectY       @"y"
+#define kPopoverRectWidth   @"width"
+#define kPopoverRectHeight  @"height"
+#define kPopoverArrowDir    @"arrowDir"
 
 #define kPreviousSelectedName   @"previousSelected"
 
 
 @interface CAssetsPickerPlugin : CDVPlugin <UINavigationControllerDelegate, CTAssetsPickerControllerDelegate, UIPopoverControllerDelegate>
 
+/**
+ * picker
+ *
+ * The corresponding property is an instance of the assets picker navigation controller
+ * Used to show all album groups and assets with views.
+ */
 @property (strong, nonatomic) CTAssetsPickerController *picker;
+
+/**
+ * lastCommand
+ * 
+ * The corresponding property is a command from web view to the plugin.
+ */
 @property (strong, nonatomic) CDVInvokedUrlCommand* latestCommand;
+
+/**
+ * hasPendingOperation
+ *
+ * This flag represents the plugin is processing previous command or not.
+ *  When this flag is set(YES), the plugin doesn't finish previous command yet.
+ */
 @property (readwrite, assign) BOOL hasPendingOperation;
+
+
+/**
+ * popover
+ *
+ * Popover view controller is used to show UIs on iPad
+ */
 @property (nonatomic, strong) UIPopoverController *popover;
 
+
+/**/////////////////////////////////////
+/* Plugin interfaces
+*//////////////////////////////////////
 - (void)getPicture:(CDVInvokedUrlCommand *)command;
 - (void)getById:(CDVInvokedUrlCommand *)command;
 - (void)setOverlay:(CDVInvokedUrlCommand *)command;
@@ -69,7 +107,7 @@ typedef enum {
 - (void)mapAssetsLibrary:(CDVInvokedUrlCommand *)command;
 
 
-
+/************ utility functions ************/
 + (NSString *)date2str:(NSDate *)convertDate withFormat:(NSString *)formatString;
 + (UIImage *)scaleImage:(UIImage *)image scale:(CGFloat)scale;
 + (NSString *)getAppPath;

@@ -83,6 +83,19 @@
     [self setupGroup];
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    // iPad
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        CGSize size = self.picker.popoverSize;
+        self.contentSizeForViewInPopover = size;
+        self.preferredContentSize = size;
+    }
+    
+    [super viewWillAppear:animated];
+}
+
 - (void)dealloc
 {
     [self removeNotificationObserver];
@@ -403,8 +416,7 @@
     }];
     
 #else
-    CTAssetsViewController *vc = [[CTAssetsViewController alloc] initWithType:CTAssetsViewTypeNormal];
-    vc.assetsGroup = [self.groups objectAtIndex:indexPath.row];
+    UIViewController *vc = [[UIViewController alloc] init];
     [self.picker pushViewController:vc animated:YES];
 #endif
     

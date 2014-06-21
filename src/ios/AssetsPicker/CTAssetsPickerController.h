@@ -61,6 +61,8 @@
 
 @property (nonatomic, strong) NSMutableDictionary *overlayAssets;
 
+@property (readwrite) CGSize popoverSize;
+
 /**
  *  Determines whether or not the cancel button is visible in the picker.
  *

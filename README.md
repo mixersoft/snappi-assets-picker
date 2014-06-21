@@ -375,10 +375,12 @@ label : label,		// file name of the image. (String)
 orig_ext : orig_ext,	// extension of the image file. [JPG | PNG]
 data : imageData,	// image data, Base64 encoding of the image data, OR the image file URI, depending on options used. (String)
 exif : {
-    DateTimeOriginal : dateTimeOriginal, 	// datetime when the image was taken
+    /*DateTimeOriginal : dateTimeOriginal, 	// datetime when the image was taken
     PixelXDimension : pixelXDimension,		// width (pixels) of the image
     PixelYDimension : pixelYDimension,		// height (pixels) of the image
-    Orientation : orientation			// orientation number
+    Orientation : orientation			// orientation number*/
+    {dictionary format of EXIF attributes if exist in the image} // EXIF attributes is defined on https://developer.apple.com/library/ios/documentation/graphicsimaging/reference/CGImageProperties_Reference/Reference/reference.html#//apple_ref/doc/constant_group/EXIF_Dictionary_Keys
+
 };
 ```
 
@@ -427,10 +429,12 @@ label : label,		// file name of the image. (String)
 orig_ext : orig_ext,	// extension of the image file. [JPG | PNG]
 data : imageData,	// image data, Base64 encoding of the image data, OR the image file URI, depending on options used. (String)
 exif : {
+    /*
     DateTimeOriginal : dateTimeOriginal, 	// datetime when the image was taken
     PixelXDimension : pixelXDimension,		// width (pixels) of the image
     PixelYDimension : pixelYDimension,		// height (pixels) of the image
-    Orientation : orientation			// orientation number
+    Orientation : orientation			// orientation number*/
+    {dictionary format of EXIF attributes if exist in the image} // EXIF attributes is defined on https://developer.apple.com/library/ios/documentation/graphicsimaging/reference/CGImageProperties_Reference/Reference/reference.html#//apple_ref/doc/constant_group/EXIF_Dictionary_Keys
 };
 ```
 
@@ -457,6 +461,7 @@ Optional parameters to customize the settings.
   popoverOptions: CameraPopoverOptions,
   saveToPhotoAlbum: false,
   scrollToDate: new Date(),
+  thumbnail : isThumbnail,
   overlay: {overlayName: array of "uuid.ext"}
   bookmarks: {albumID1:assetID1, albumID2:assetID2, …} // or {date:[array of dates]}
   };
@@ -488,6 +493,7 @@ Camera.PictureSourceType = {
 ```
 - targetWidth: Width in pixels to scale image. Could be used with targetHeight. Aspect ratio is keeped. (Number)
 - targetHeight: Height in pixels to scale image. Could be used with targetWidth. Aspect ratio is keeped. (Number)
+- thumbnail: Flag option to select source image as original image(false) or thumbnail image(true). Default value is false. When set this flag, targetWidth/targetHeight options are ignored.
 - mediaType: Set the type of media to select from. Only works when PictureSourceType is PHOTOLIBRARY or SAVEDPHOTOALBUM. Defined in nagivator.camera.MediaType (Number)
 ```javascript
 Camera.MediaType = { 
@@ -635,7 +641,15 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
                     quality: 75,
                     
                     encodingType: Camera.EncodingType.JPEG,
-                    overlay: overlayObj
+                    overlay: overlayObj,
+                    thumbnail: true,
+                    popoverOptions: {
+                        x : 0,
+                        y : 32,
+                        width : 800,
+                        height : 930,
+                        arrowDir : Camera.PopoverArrowDirection.ARROW_ANY
+                    }
                 };
                 if (isFileUri == true)
                 options.destinationType = Camera.DestinationType.FILE_URI;
@@ -674,7 +688,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             for (i = 0; i < selectedAssets.length; i++)
             {
                 var obj = selectedAssets[i];
-                strTr += "<tr><td><img id='" + obj.id + "' /></td><td>" + obj.exif.PixelXDimension + " x " + obj.exif.PixelYDimension + " : " + obj.exif.Orientation + "</td></tr>";
+                strTr += "<tr><td><img id='" + obj.id + "' /></td><td>" + obj.exif.PixelXDimension + " x " + obj.exif.PixelYDimension + " : " + obj.exif.Orientation + "</td><td>" + obj.exif.DateTimeOriginal + "</td></tr>";
             }
             document.getElementById("imagetable").innerHTML = strTr;
             for (i = 0; i < selectedAssets.length; i++)
@@ -792,8 +806,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
             //
         }
         
-            </script>
-    </body>
+            </script>    </body>
 </html>
 ```
 
