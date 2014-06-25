@@ -54,11 +54,13 @@ typedef enum {
 #define kTargetHeight       @"targetHeight"
 #define kOverlayKey         @"overlay"
 #define kPopoverOptions     @"popoverOptions"
-#define kPopoverRectX       @"x"
-#define kPopoverRectY       @"y"
-#define kPopoverRectWidth   @"width"
-#define kPopoverRectHeight  @"height"
+#define kPopoverX       @"x"
+#define kPopoverY       @"y"
+#define kPopoverWidth   @"width"
+#define kPopoverHeight  @"height"
 #define kPopoverArrowDir    @"arrowDir"
+#define kPopoverViewWidth       @"popoverWidth"
+#define kPopoverViewHeight      @"popoverHeight"
 
 #define kPreviousSelectedName   @"previousSelected"
 

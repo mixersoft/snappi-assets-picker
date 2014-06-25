@@ -513,11 +513,13 @@ Camera.MediaType = {
 
 Parameters only used by iOS to specify the anchor element location and arrow direction of popover used on iPad when selecting images from the library or album.
 ```javascript
-{ x : 0, 
-  y :  32,
+{ x : 280, 
+  y :  220,
   width : 320,
   height : 480,
-  arrowDir : Camera.PopoverArrowDirection.ARROW_ANY
+  arrowDir : Camera.PopoverArrowDirection.ARROW_ANY,
+  popoverWidth : 500,
+  popoverHeight : 500
 };
 ```
 
@@ -526,6 +528,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
 - width: width, in pixels, of the element on the screen to anchor popover onto. (Number)
 - height: height, in pixels, of the element on the screen to anchor popover onto. (Number)
 - arrowDir: Direction the arrow on the popover should point. Defined in Camera.PopoverArrowDirection (Number)
+ You can use this value to force the popover to be positioned on a specific side of the rectangle(x, y, width, height).
 ```javascript
     Camera.PopoverArrowDirection = {
         ARROW_UP : 1,        // matches iOS UIPopoverArrowDirection constants
@@ -535,7 +538,9 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
         ARROW_ANY : 15
     };
 ```
-**Note:** The size of the popover may change to adjust to the direction of the arrow and orientation of the screen. Make sure to account for orientation changes when specifying the anchor element location.
+- popoverWidth : Width of popover
+- popoverHeight : Height of popover
+
 #### Example
 ```javascript
  var popover = new CameraPopoverOptions(300,300,100,100,Camera.PopoverArrowDirection.ARROW_ANY);
@@ -644,11 +649,13 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
                     overlay: overlayObj,
                     thumbnail: true,
                     popoverOptions: {
-                        x : 0,
-                        y : 32,
-                        width : 800,
-                        height : 930,
-                        arrowDir : Camera.PopoverArrowDirection.ARROW_ANY
+                        x : 300,
+                        y : 200,
+                        width : 40,
+                        height : 20,
+                        arrowDir : Camera.PopoverArrowDirection.ARROW_ANY,
+			popoverWidth : 500,
+			popoverHeight : 500
                     }
                 };
                 if (isFileUri == true)

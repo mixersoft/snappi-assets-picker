@@ -34,7 +34,8 @@
     NSMutableArray *_highlightDates;
     BOOL _isDateBookmark;
     BOOL _isThumbnail;
-    CGRect _popOverRect;
+    CGRect _popoverRect;
+    CGSize _popoverSize;
     UIPopoverArrowDirection _popOverDirection;
     ///////////////////////////////////////
 }
@@ -77,10 +78,9 @@
     {
         self.popover = [[UIPopoverController alloc] initWithContentViewController:self.picker];
         self.popover.delegate = self;
-        CGRect frame = CGRectMake(0, 0, _popOverRect.origin.x, _popOverRect.origin.y);
-        [self.popover presentPopoverFromRect:frame inView:self.viewController.view permittedArrowDirections:_popOverDirection animated:YES];
-        [self.popover setPopoverContentSize:CGSizeMake(_popOverRect.size.width, _popOverRect.size.height) animated:NO];
-        self.picker.popoverSize = _popOverRect.size;
+        [self.popover presentPopoverFromRect:_popoverRect inView:self.viewController.view permittedArrowDirections:_popOverDirection animated:YES];
+        [self.popover setPopoverContentSize:_popoverSize animated:NO];
+        self.picker.popoverSize = _popoverSize;
     }
     else
     {
@@ -408,7 +408,8 @@
     _highlightDates = [[NSMutableArray alloc] init];
     _isDateBookmark = NO;
     _isThumbnail = NO;
-    _popOverRect = CGRectMake(100, 100, 300, 200);
+    _popoverRect = CGRectMake(100, 100, 300, 200);
+    _popoverSize = CGSizeMake(300, 480);
     _popOverDirection = UIPopoverArrowDirectionAny;
 }
 
@@ -467,22 +468,22 @@
         int width = -1;
         int height = -1;
         UIPopoverArrowDirection dir = UIPopoverArrowDirectionAny;
-        obj = [popdic objectForKey:kPopoverRectX];
+        obj = [popdic objectForKey:kPopoverX];
         if (obj != nil)
         {
             x = [obj integerValue];
         }
-        obj = [popdic objectForKey:kPopoverRectY];
+        obj = [popdic objectForKey:kPopoverY];
         if (obj != nil)
         {
             y = [obj integerValue];
         }
-        obj = [popdic objectForKey:kPopoverRectWidth];
+        obj = [popdic objectForKey:kPopoverWidth];
         if (obj != nil)
         {
             width = [obj integerValue];
         }
-        obj = [popdic objectForKey:kPopoverRectHeight];
+        obj = [popdic objectForKey:kPopoverHeight];
         if (obj != nil)
         {
             height = [obj integerValue];
@@ -494,14 +495,26 @@
         }
         else
         {
-            _popOverRect = CGRectMake(x, y, width, height);
+            _popoverRect = CGRectMake(x, y, width, height);
         }
         
+        // direction
         obj = [popdic objectForKey:kPopoverArrowDir];
         if (obj != nil)
             dir = (UIPopoverArrowDirection) [obj integerValue];
         
         _popOverDirection = dir;
+        
+        // view size
+        int viewWidth = -1, viewHeight = -1;
+        obj = [popdic objectForKey:kPopoverViewWidth];
+        if (obj != nil)
+            viewWidth = [obj integerValue];
+        obj = [popdic objectForKey:kPopoverViewHeight];
+        if (obj != nil)
+            viewHeight = [obj integerValue];
+        if (viewWidth != -1 && viewHeight != -1)
+            _popoverSize = CGSizeMake(viewWidth, viewHeight);
     }
     
     // overlay
