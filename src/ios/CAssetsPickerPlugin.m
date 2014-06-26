@@ -650,12 +650,14 @@
             image = [UIImage imageWithCGImage:asset.thumbnail];
             CGSize szImage = image.size;
             szImage = szImage;
+            CGFloat scale = image.scale;
+            scale = scale;
         }
         else
         {
             image = [UIImage imageWithCGImage:asset.defaultRepresentation.fullResolutionImage scale:1.0 orientation:(UIImageOrientation)asset.defaultRepresentation.orientation];
         
-            // scale image with targetW/H
+            // scale image with targetW/Hzz
             if (_targetWidth <= 0 && _targetHeight <= 0)
             {
                 image = image;
@@ -979,6 +981,7 @@
     uint8_t *buffer = (Byte*)malloc(image_representation.size);
     NSUInteger length = [image_representation getBytes:buffer fromOffset: 0.0  length:image_representation.size error:nil];
     NSMutableDictionary *exif_dict = [[NSMutableDictionary alloc] init];
+    NSDictionary *tiff_dict = nil;
     if (length != 0)  {
         
         // buffer -> NSData object; free buffer afterwards
@@ -997,6 +1000,9 @@
         // get exif data
         CFDictionaryRef exif = (CFDictionaryRef)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyExifDictionary);
         exif_dict = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)exif];
+        
+        // get tiff data
+        tiff_dict = (__bridge NSDictionary *)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyTIFFDictionary);
 //        NSLog(@"exif_dict: %@", exif_dict);
         
 //        // save image WITH meta data
@@ -1068,6 +1074,24 @@
     if ([exif_dict objectForKey:kOrientationKey] == nil)
     {
         [exif_dict setObject:[asset valueForProperty:ALAssetPropertyOrientation] forKey:kOrientationKey];
+    }
+    
+    // tiff data
+    if (tiff_dict != nil)
+    {
+        // make
+        NSString *strMake = (__bridge NSString *)(__bridge CFStringRef)[tiff_dict objectForKey:(__bridge NSString *)kCGImagePropertyTIFFMake];
+        if (strMake != nil)
+        {
+            [exif_dict setObject:strMake forKey:(__bridge NSString *)kCGImagePropertyTIFFMake];
+        }
+        
+        // model
+        NSString *strModel = (__bridge NSString *)(__bridge CFStringRef)[tiff_dict objectForKey:(__bridge NSString *)kCGImagePropertyTIFFModel];
+        if (strModel != nil)
+        {
+            [exif_dict setObject:strModel forKey:(__bridge NSString *)kCGImagePropertyTIFFModel];
+        }
     }
     
     NSLog(@"exif_dict: %@", exif_dict);
