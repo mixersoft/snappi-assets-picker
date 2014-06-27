@@ -522,7 +522,7 @@ Parameters only used by iOS to specify the anchor element location and arrow dir
   popoverHeight : 500
 };
 ```
-
+![Popover screen](/ScreenShots/popover.png "Popover screen")
 - x: x pixel coordinate of element on the screen to anchor popover onto. (Number)
 - y: y pixel coordinate of element on the screen to anchor popover onto. (Number)
 - width: width, in pixels, of the element on the screen to anchor popover onto. (Number)
