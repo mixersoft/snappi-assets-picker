@@ -147,8 +147,7 @@
         	
 	<!-- system frameworks -->
 	<framework src="AssetsLibrary.framework" weak="true" />
-	<framework src=“ImageIO.framework" weak="true" />
-
+	<framework src="ImageIO.framework" weak="true" />
     </platform>
 
 </plugin>
