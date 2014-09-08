@@ -1005,7 +1005,7 @@
 		if (exif)
 			exif_dict = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)exif];
 		else
-			exif_dic = [[NSMutableDictionary alloc] init];
+			exif_dict = [[NSMutableDictionary alloc] init];
         
         // get tiff data
 		if (imagePropertiesDictionary)
