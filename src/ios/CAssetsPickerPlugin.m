@@ -995,14 +995,21 @@
         
         // get imagePropertiesDictionary
         CFDictionaryRef imagePropertiesDictionary;
-        imagePropertiesDictionary = CGImageSourceCopyPropertiesAtIndex(sourceRef,0, NULL);
+        imagePropertiesDictionary = CGImageSourceCopyPropertiesAtIndex(sourceRef, 0, NULL);
         
         // get exif data
-        CFDictionaryRef exif = (CFDictionaryRef)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyExifDictionary);
-        exif_dict = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)exif];
+        CFDictionaryRef exif = nil;
+		if (imagePropertiesDictionary)
+			exif = (CFDictionaryRef)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyExifDictionary);
+			
+		if (exif)
+			exif_dict = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)exif];
+		else
+			exif_dic = [[NSMutableDictionary alloc] init];
         
         // get tiff data
-        tiff_dict = (__bridge NSDictionary *)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyTIFFDictionary);
+		if (imagePropertiesDictionary)
+			tiff_dict = (__bridge NSDictionary *)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyTIFFDictionary);
 //        NSLog(@"exif_dict: %@", exif_dict);
         
 //        // save image WITH meta data
