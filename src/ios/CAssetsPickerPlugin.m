@@ -1009,7 +1009,10 @@
         
         // get tiff data
 		if (imagePropertiesDictionary)
+        {
 			tiff_dict = (__bridge NSDictionary *)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyTIFFDictionary);
+            CFRelease(imagePropertiesDictionary);
+        }
 //        NSLog(@"exif_dict: %@", exif_dict);
         
 //        // save image WITH meta data
@@ -1042,7 +1045,7 @@
         // clean up
 //        CFRelease(imageRef);
         //CFRelease(exif);
-        CFRelease(imagePropertiesDictionary);
+//        CFRelease(imagePropertiesDictionary);
         CFRelease(sourceRef);
     }
     else {
