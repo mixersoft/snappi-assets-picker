@@ -1042,8 +1042,10 @@
         // clean up
 //        CFRelease(imageRef);
         //CFRelease(exif);
-        CFRelease(imagePropertiesDictionary);
-        CFRelease(sourceRef);
+		if (imagePropertiesDictionary)
+			CFRelease(imagePropertiesDictionary);
+		if (sourceRef)
+			CFRelease(sourceRef);
     }
     else {
         NSLog(@"image_representation buffer length == 0");
