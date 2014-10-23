@@ -1005,11 +1005,12 @@
 		if (exif)
 			exif_dict = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)exif];
 		else
-			exif_dic = [[NSMutableDictionary alloc] init];
+			exif_dict = [[NSMutableDictionary alloc] init];
         
         // get tiff data
 		if (imagePropertiesDictionary)
 			tiff_dict = (__bridge NSDictionary *)CFDictionaryGetValue(imagePropertiesDictionary, kCGImagePropertyTIFFDictionary);
+        
 //        NSLog(@"exif_dict: %@", exif_dict);
         
 //        // save image WITH meta data
